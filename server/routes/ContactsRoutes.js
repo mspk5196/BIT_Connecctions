@@ -6,6 +6,7 @@ import {
   DeleteContact,
   DeleteVerifiedContact,
   SearchContacts,
+  SearchSkills,
   AddEventToExistingContact,
   GetUnVerifiedContacts,
   UpdateContactAndEvents,
@@ -64,6 +65,12 @@ import { verifyToken, authorizeRoles } from "../middlewares/AuthMiddleware.js";
 
 // User routes - Allow all authenticated users
 router.get(
+  "/contacts/search-skills/",
+  verifyToken,
+  authorizeRoles("user", "admin", "cata", "catb", "catc"),
+  SearchSkills
+);
+router.get(
   "/contacts/filter/",
   verifyToken,
   authorizeRoles("user", "admin", "cata", "catb", "catc"),
@@ -100,6 +107,7 @@ router.get(
   authorizeRoles("user", "admin", "cata", "catb", "catc"),
   SearchContacts
 );
+
 router.post(
   "/add-event-existing-contact/:contactId/:userId",
   verifyToken,

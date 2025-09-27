@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../utils/axios";
 import Alert from "../../components/Alert/Alert";
+import SkillAutoFinish from "../../components/SkillAutoFinish/SkillAutoFinish.jsx";
 import {
   ArrowLeft,
   Zap,
@@ -468,7 +469,7 @@ const VisitingCardDetails = () => {
         email_address: visitingCardDetails.email_address,
         dob: visitingCardDetails.dob === "" ? null : visitingCardDetails.dob,
         gender:
-          visitingCardDetails.gender === "" ? null : visitingCardDetails.gender ,
+          visitingCardDetails.gender === "" ? null : visitingCardDetails.gender,
         nationality: visitingCardDetails.nationality,
         marital_status: visitingCardDetails.marital_status,
         category: visitingCardDetails.category,
@@ -480,7 +481,9 @@ const VisitingCardDetails = () => {
           visitingCardDetails.emergency_contact_relationship,
         emergency_contact_phone_number:
           visitingCardDetails.emergency_contact_phone_number,
-        skills: visitingCardDetails.skills,
+        skills: Array.isArray(visitingCardDetails.skills)
+          ? visitingCardDetails.skills.join(", ")
+          : visitingCardDetails.skills,
         logger: visitingCardDetails.logger,
         linkedin_url: visitingCardDetails.linkedin_url,
 
@@ -507,8 +510,13 @@ const VisitingCardDetails = () => {
           ug_to_date: visitingCardDetails.ug_to_date,
         },
 
-        // Experiences array (keeping the existing structure)
-        experiences: visitingCardDetails.experience,
+        // Experiences array (convert company_skills from array to string)
+        experiences: visitingCardDetails.experience.map((exp) => ({
+          ...exp,
+          company_skills: Array.isArray(exp.company_skills)
+            ? exp.company_skills.join(", ")
+            : exp.company_skills,
+        })),
 
         // Events array - transform from flat fields to object array
         events: visitingCardDetails.event_name
@@ -1156,12 +1164,10 @@ const VisitingCardDetails = () => {
               <h4 className="text-md font-medium text-gray-800">
                 General Skills
               </h4>
-              <textarea
+              <SkillAutoFinish
                 value={visitingCardDetails.skills}
-                onChange={(e) => handleInputChange("skills", e.target.value)}
-                className="w-full py-3 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                rows={4}
-                placeholder="List your skills separated by commas (e.g., JavaScript, React, Node.js, Python, Project Management)"
+                onChange={(value) => handleInputChange("skills", value)}
+                placeholder="Search and add skills (e.g., JavaScript, React, Node.js)"
               />
             </div>
 
@@ -1263,18 +1269,12 @@ const VisitingCardDetails = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Company Skills
                       </label>
-                      <input
-                        type="text"
+                      <SkillAutoFinish
                         value={exp.company_skills}
-                        onChange={(e) =>
-                          handleExperienceChange(
-                            index,
-                            "company_skills",
-                            e.target.value
-                          )
+                        onChange={(value) =>
+                          handleExperienceChange(index, "company_skills", value)
                         }
-                        className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Skills used at this company"
+                        placeholder="Search and add company-specific skills"
                       />
                     </div>
 

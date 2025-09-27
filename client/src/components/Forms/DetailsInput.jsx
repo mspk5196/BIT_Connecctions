@@ -12,6 +12,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Header from "../Header/Header";
 import Alert from "../Alert/Alert";
+import SkillAutoFinish from "../SkillAutoFinish/SkillAutoFinish";
 import { useAuthStore } from "../../store/AuthStore";
 import api from "../../utils/axios";
 
@@ -187,7 +188,7 @@ function DetailsInput() {
   };
 
   useEffect(() => {
-    if (isAddMode && initialData) {
+    if (initialData) {
       const formatDate = (dateString) => {
         if (!dateString) return "";
         return dateString.split("T")[0];
@@ -202,7 +203,7 @@ function DetailsInput() {
       const calculatedAge = formattedDob
         ? calculateAge(formattedDob)
         : initialData.age || "";
-
+      console.log("Skills:", initialData.skills);
       setFormData((prevData) => ({
         contact_id: initialData.contact_id || "",
         assignment_id: initialData.assignment_id || null,
@@ -239,7 +240,9 @@ function DetailsInput() {
           ug_from_date: formatDate(initialData.education?.ug_from_date),
           ug_to_date: formatDate(initialData.education?.ug_to_date),
         },
-        skills: initialData.skills || "",
+        skills: Array.isArray(initialData.skills)
+          ? initialData.skills.join(", ")
+          : initialData.skills || "",
         linkedin_url: initialData.linkedin_url || "",
         event_id: firstEvent.event_id || "",
         event_name: firstEvent.event_name || "",
@@ -249,29 +252,31 @@ function DetailsInput() {
         event_location: firstEvent.event_location || "",
         experience:
           Array.isArray(initialData.experiences) &&
-            initialData.experiences.length > 0
+          initialData.experiences.length > 0
             ? initialData.experiences.map((exp) => ({
-              job_title: exp.job_title || "",
-              company: exp.company || "",
-              department: exp.department || "",
-              from_date: formatDate(exp.from_date),
-              to_date: formatDate(exp.to_date),
-              company_skills: exp.company_skills || "",
-            }))
+                job_title: exp.job_title || "",
+                company: exp.company || "",
+                department: exp.department || "",
+                from_date: formatDate(exp.from_date),
+                to_date: formatDate(exp.to_date),
+                company_skills: Array.isArray(exp.company_skills)
+                  ? exp.company_skills.join(", ")
+                  : exp.company_skills || "",
+              }))
             : [
-              {
-                job_title: "",
-                company: "",
-                department: "",
-                from_date: "",
-                to_date: "",
-                company_skills: "",
-              },
-            ],
+                {
+                  job_title: "",
+                  company: "",
+                  department: "",
+                  from_date: "",
+                  to_date: "",
+                  company_skills: "",
+                },
+              ],
         logger: initialData.logger || "",
       }));
     }
-  }, [isAddMode, initialData]);
+  }, [initialData]);
 
   // Field Definitions
   const personalDetails = [
@@ -847,12 +852,12 @@ function DetailsInput() {
 
     const address = hasAddressData
       ? {
-        street: formData.street || null,
-        city: formData.city || null,
-        state: formData.state || null,
-        country: formData.country || null,
-        zipcode: formData.zipcode || null,
-      }
+          street: formData.street || null,
+          city: formData.city || null,
+          state: formData.state || null,
+          country: formData.country || null,
+          zipcode: formData.zipcode || null,
+        }
       : null;
 
     const educationFields = Object.keys(formData.education);
@@ -862,17 +867,17 @@ function DetailsInput() {
 
     const education = hasEducationData
       ? {
-        pg_course_name: formData.education.pg_course_name || null,
-        pg_college: formData.education.pg_college || null,
-        pg_university: formData.education.pg_university || null,
-        pg_from_date: formData.education.pg_from_date || null,
-        pg_to_date: formData.education.pg_to_date || null,
-        ug_course_name: formData.education.ug_course_name || null,
-        ug_college: formData.education.ug_college || null,
-        ug_university: formData.education.ug_university || null,
-        ug_from_date: formData.education.ug_from_date || null,
-        ug_to_date: formData.education.ug_to_date || null,
-      }
+          pg_course_name: formData.education.pg_course_name || null,
+          pg_college: formData.education.pg_college || null,
+          pg_university: formData.education.pg_university || null,
+          pg_from_date: formData.education.pg_from_date || null,
+          pg_to_date: formData.education.pg_to_date || null,
+          ug_course_name: formData.education.ug_course_name || null,
+          ug_college: formData.education.ug_college || null,
+          ug_university: formData.education.ug_university || null,
+          ug_from_date: formData.education.ug_from_date || null,
+          ug_to_date: formData.education.ug_to_date || null,
+        }
       : null;
 
     const experiences = formData.experience
@@ -883,7 +888,9 @@ function DetailsInput() {
         department: exp.department || null,
         from_date: exp.from_date || null,
         to_date: exp.to_date || null,
-        company_skills: exp.company_skills || null,
+        company_skills: Array.isArray(exp.company_skills)
+          ? exp.company_skills.join(", ")
+          : exp.company_skills || null,
       }));
 
     const apiPayload = {
@@ -902,7 +909,9 @@ function DetailsInput() {
         formData.emergency_contact_relationship || null,
       emergency_contact_phone_number:
         formData.emergency_contact_phone_number || null,
-      skills: formData.skills || null,
+      skills: Array.isArray(formData.skills)
+        ? formData.skills.join(", ")
+        : formData.skills || null,
       logger: formData.logger || null,
       linkedin_url: formData.linkedin_url || null,
       contact_id: formData.contact_id,
@@ -928,13 +937,46 @@ function DetailsInput() {
   // Handle different API calls with alerts
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Basic validation
+    if (!formData.name?.trim()) {
+      showAlert("error", "Name is required");
+      return;
+    }
+    if (!formData.phone_number?.trim()) {
+      showAlert("error", "Primary phone number is required");
+      return;
+    }
+    if (!formData.email_address?.trim()) {
+      showAlert("error", "Primary email is required");
+      return;
+    }
+
     const apiPayload = transformFormDataForAPI(formData);
     console.log("Transformed API Payload:", apiPayload);
+    console.log(
+      "Skills Debug - formData.skills:",
+      formData.skills,
+      "Type:",
+      typeof formData.skills
+    );
+    console.log(
+      "Skills Debug - apiPayload.skills:",
+      apiPayload.skills,
+      "Type:",
+      typeof apiPayload.skills
+    );
     console.log("isAddMode:", isAddMode);
     console.log("initialData:", initialData);
     console.log("source:", source);
+    console.log("formData.contact_id:", formData.contact_id);
+
     try {
-      if (isAddMode && initialData) {
+      // Check for specific verification flows (middleman, userassignments)
+      if (
+        (source === "middleman" || source === "userassignments") &&
+        initialData
+      ) {
         let response;
         let successMessage = "";
 
@@ -945,8 +987,9 @@ function DetailsInput() {
             `/api/update-contact/${apiPayload.contact_id}?contact_status=approved&event_verified=true&userId=${id}`,
             apiPayload
           );
-          successMessage = `${apiPayload.name || initialData.name
-            } has been successfully verified and added to contacts.`;
+          successMessage = `${
+            apiPayload.name || initialData.name
+          } has been successfully verified and added to contacts.`;
           console.log("MiddleMan Update response:", response);
         } else if (source === "userassignments") {
           // For UserAssignments - update as pending
@@ -956,7 +999,8 @@ function DetailsInput() {
           );
           successMessage =
             successCallback?.message ||
-            `${apiPayload.name || initialData.name
+            `${
+              apiPayload.name || initialData.name
             } has been successfully updated.`;
           console.log("UserAssignments Update response:", response);
         }
@@ -980,29 +1024,62 @@ function DetailsInput() {
             navigate(-1);
           }
         }, 500);
-      } else if (
-        (isAddMode && !initialData) ||
-        (isAddMode && initialData == null)
-      ) {
-        if (source == "admin") {
-          let response;
-          let successMessage = "";
-          response = await api.post(
-            `/api/create-contact-by-admin/?contact_status=approved&event_verified=true`,
-            apiPayload
-          );
-          successMessage = `${apiPayload.name || initialData.name
-            } has been successfully added to contacts.`;
-          console.log("admin Update response:", response);
+      } else if (source === "admin" && !initialData) {
+        // Handle creating new contact by admin
+        let response;
+        let successMessage = "";
+        response = await api.post(
+          `/api/create-contact-by-admin/?contact_status=approved&event_verified=true`,
+          apiPayload
+        );
+        successMessage = `${apiPayload.name} has been successfully added to contacts.`;
+        console.log("admin Create response:", response);
+        showAlert("success", successMessage);
+        setTimeout(() => {
+          navigate(-1);
+        }, 1500);
+      } else {
+        // Handle regular edit mode (standard contact editing)
+        if (!apiPayload.contact_id) {
+          throw new Error("Contact ID is missing for update operation");
+        }
+
+        console.log(
+          "Making PUT request to:",
+          `/api/update-contact/${apiPayload.contact_id}?userId=${id}`
+        );
+
+        const response = await api.put(
+          `/api/update-contact/${apiPayload.contact_id}?userId=${id}`,
+          apiPayload
+        );
+
+        console.log("Regular Update response:", response);
+
+        if (response.data?.success) {
+          const successMessage = `${apiPayload.name} has been successfully updated.`;
           showAlert("success", successMessage);
+
+          // Navigate back after showing alert
           setTimeout(() => {
             navigate(-1);
           }, 1500);
+        } else {
+          throw new Error(response.data?.message || "Update failed");
         }
       }
     } catch (error) {
-      console.log("Error updating user", error);
-      showAlert("error", "Failed to update contact. Please try again.");
+      console.error("Error updating contact:", error);
+
+      let errorMessage = "Failed to update contact. Please try again.";
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      showAlert("error", errorMessage);
     }
   };
 
@@ -1145,7 +1222,9 @@ function DetailsInput() {
         ug_from_date: formatDate(initialData.education?.ug_from_date),
         ug_to_date: formatDate(initialData.education?.ug_to_date),
       },
-      skills: initialData.skills || "",
+      skills: Array.isArray(initialData.skills)
+        ? initialData.skills.join(", ")
+        : initialData.skills || "",
       linkedin_url: initialData.linkedin_url || "",
       event_id: firstEvent.event_id || "",
       event_name: firstEvent.event_name || "",
@@ -1155,25 +1234,27 @@ function DetailsInput() {
       event_location: firstEvent.event_location || "",
       experience:
         Array.isArray(initialData.experiences) &&
-          initialData.experiences.length > 0
+        initialData.experiences.length > 0
           ? initialData.experiences.map((exp) => ({
-            job_title: exp.job_title || "",
-            company: exp.company || "",
-            department: exp.department || "",
-            from_date: formatDate(exp.from_date),
-            to_date: formatDate(exp.to_date),
-            company_skills: exp.company_skills || "",
-          }))
+              job_title: exp.job_title || "",
+              company: exp.company || "",
+              department: exp.department || "",
+              from_date: formatDate(exp.from_date),
+              to_date: formatDate(exp.to_date),
+              company_skills: Array.isArray(exp.company_skills)
+                ? exp.company_skills.join(", ")
+                : exp.company_skills || "",
+            }))
           : [
-            {
-              job_title: "",
-              company: "",
-              department: "",
-              from_date: "",
-              to_date: "",
-              company_skills: "",
-            },
-          ],
+              {
+                job_title: "",
+                company: "",
+                department: "",
+                from_date: "",
+                to_date: "",
+                company_skills: "",
+              },
+            ],
       logger: "",
       event_verified: true,
     });
@@ -1216,8 +1297,9 @@ function DetailsInput() {
           required={field.label.includes("*")}
           readOnly={field.readOnly || false}
           rows={3}
-          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0077b8] resize-vertical ${field.readOnly ? "bg-gray-100 cursor-not-allowed" : ""
-            }`}
+          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0077b8] resize-vertical ${
+            field.readOnly ? "bg-gray-100 cursor-not-allowed" : ""
+          }`}
         />
       ) : field.type === "date" ? (
         <DatePicker
@@ -1261,8 +1343,9 @@ function DetailsInput() {
           onChange={handleInputChange}
           required={field.label.includes("*")}
           readOnly={field.readOnly || false}
-          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0077b8] ${field.readOnly ? "bg-gray-100 cursor-not-allowed" : ""
-            }`}
+          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0077b8] ${
+            field.readOnly ? "bg-gray-100 cursor-not-allowed" : ""
+          }`}
         />
       )}
     </div>
@@ -1362,7 +1445,7 @@ function DetailsInput() {
           </div>
         </div>
       </div>
-     <div className="w-full container mx-auto px-4 md:px-6 pt-4">
+      <div className="w-full container mx-auto px-4 md:px-6 pt-4">
         <button
           onClick={handleBack}
           className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors duration-200 bg-white hover:bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 shadow-sm mb-4"
@@ -1379,7 +1462,6 @@ function DetailsInput() {
         >
           <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm space-y-6 md:space-y-8">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-8 pr-0 md:pr-20">
-
               <div>
                 <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-2">
                   {getTitle()}
@@ -1460,20 +1542,19 @@ function DetailsInput() {
                 Skills
               </h3>
               <div className="space-y-2">
-                <label
-                  htmlFor="skills"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  General Skills
-                </label>
-                <textarea
-                  id="skills"
-                  name="skills"
+                <SkillAutoFinish
+                  label="General Skills"
+                  placeholder="Search and add skills (e.g., Python, Public Speaking, SEO)"
                   value={formData.skills}
-                  placeholder="Enter general skills, separated by commas (e.g., Python, Public Speaking, SEO)"
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0077b8] resize-vertical"
+                  onChange={(skillsString) => {
+                    const event = {
+                      target: {
+                        name: "skills",
+                        value: skillsString,
+                      },
+                    };
+                    handleInputChange(event);
+                  }}
                 />
               </div>
             </div>
@@ -1637,21 +1718,20 @@ function DetailsInput() {
                         />
                       </div>
                       <div className="space-y-2 md:col-span-2 lg:col-span-1">
-                        <label
-                          htmlFor={`company_skills-${index}`}
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Job-specific Skills
-                        </label>
-                        <textarea
-                          name="company_skills"
-                          id={`company_skills-${index}`}
+                        <SkillAutoFinish
+                          label="Job-specific Skills"
+                          placeholder="Search and add job-specific skills (e.g., React, Node.js)"
                           value={exp.company_skills}
-                          onChange={(e) => handleExperienceChange(index, e)}
-                          rows="1"
-                          placeholder="e.g., React, Node.js"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0077b8] resize-vertical"
-                        ></textarea>
+                          onChange={(skillsString) => {
+                            const event = {
+                              target: {
+                                name: "company_skills",
+                                value: skillsString,
+                              },
+                            };
+                            handleExperienceChange(index, event);
+                          }}
+                        />
                       </div>
                     </div>
                   </div>

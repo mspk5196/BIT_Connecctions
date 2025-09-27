@@ -967,6 +967,18 @@ export const UpdateContact = async (req, res) => {
     experiences,
   } = req.body;
 
+  // Debug: Log skills data being received
+  console.log("UpdateContact skills data:", {
+    skills,
+    skillsType: typeof skills,
+    skillsValue: JSON.stringify(skills),
+    experiences: experiences?.map((exp) => ({
+      job_title: exp.job_title,
+      company_skills: exp.company_skills,
+      company_skills_type: typeof exp.company_skills,
+    })),
+  });
+
   // Validate and sanitize ID fields to prevent empty string issues
   const validContactId = contact_id && contact_id !== "" ? contact_id : null;
   const validEventId = event_id && event_id !== "" ? event_id : null;
@@ -1072,6 +1084,12 @@ export const UpdateContact = async (req, res) => {
         }
       } else {
         console.log("Updating existing contact...");
+        console.log(
+          "Before UPDATE - skills value:",
+          skills,
+          "Type:",
+          typeof skills
+        );
         [contactRecord] = await t`
           UPDATE contact SET
             name = ${name === undefined ? null : name},
@@ -1116,6 +1134,10 @@ export const UpdateContact = async (req, res) => {
           WHERE contact_id = ${validContactId}
           RETURNING *
         `;
+        console.log(
+          "After UPDATE - contactRecord.skills:",
+          contactRecord?.skills
+        );
       }
 
       const activeContactId = validContactId || contactRecord?.contact_id;
@@ -1206,8 +1228,16 @@ export const UpdateContact = async (req, res) => {
       }
 
       if (experiences && experiences.length > 0 && activeContactId) {
+        console.log("Processing experiences for contact:", activeContactId);
+        console.log("Experiences data:", JSON.stringify(experiences, null, 2));
         await t`DELETE FROM contact_experience WHERE contact_id = ${activeContactId}`;
         for (const exp of experiences) {
+          console.log("Inserting experience:", {
+            job_title: exp.job_title,
+            company: exp.company,
+            company_skills: exp.company_skills,
+            company_skills_type: typeof exp.company_skills,
+          });
           const [newExp] = await t`
             INSERT INTO contact_experience (
               contact_id, job_title, company, department, from_date, to_date, company_skills
@@ -1221,6 +1251,7 @@ export const UpdateContact = async (req, res) => {
               ${exp.company_skills === undefined ? null : exp.company_skills}
             ) RETURNING *
           `;
+          console.log("Inserted experience result:", newExp);
           updatedExperiences.push(newExp);
         }
       }
@@ -1688,6 +1719,128 @@ export const SearchContacts = async (req, res) => {
     });
   } catch (err) {
     console.error("SearchContacts error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error!",
+      error: err.message,
+    });
+  }
+};
+
+// Search for skills with autocomplete functionality
+export const SearchSkills = async (req, res) => {
+  const { q } = req.query;
+
+  if (!q || q.length < 2) {
+    return res.status(200).json({
+      success: true,
+      data: [],
+    });
+  }
+
+  const searchTerm = `%${q}%`;
+
+  try {
+    // Get distinct skills from contacts where skills field contains the search term
+    const skillsData = await db`
+      SELECT DISTINCT skills 
+      FROM contact 
+      WHERE skills IS NOT NULL 
+        AND skills != '' 
+        AND skills ILIKE ${searchTerm}
+        AND (rejected = false OR rejected IS NULL)
+      LIMIT 50
+    `;
+
+    // Get distinct company_skills from contact_experience table
+    const companySkillsData = await db`
+      SELECT DISTINCT ce.company_skills 
+      FROM contact_experience ce
+      JOIN contact c ON ce.contact_id = c.contact_id
+      WHERE ce.company_skills IS NOT NULL 
+        AND ce.company_skills != '' 
+        AND ce.company_skills ILIKE ${searchTerm}
+        AND (c.rejected = false OR c.rejected IS NULL)
+      LIMIT 50
+    `;
+
+    // Parse skills and filter for matches
+    const skillsSet = new Set();
+
+    // Process general skills from contact table
+    skillsData.forEach((record) => {
+      if (record.skills) {
+        const skills = record.skills
+          .split(",")
+          .map((skill) => skill.trim())
+          .filter(
+            (skill) =>
+              skill.length > 1 && skill.toLowerCase().includes(q.toLowerCase())
+          );
+
+        skills.forEach((skill) => {
+          // Only add skills that look like legitimate technical/professional skills
+          if (
+            skill.length >= 2 &&
+            (/^[A-Za-z]/.test(skill) ||
+              skill.includes(".") ||
+              skill.includes("#") ||
+              skill.includes("+") ||
+              skill.includes("/"))
+          ) {
+            skillsSet.add(skill);
+          }
+        });
+      }
+    });
+
+    // Process job-specific skills from contact_experience table
+    companySkillsData.forEach((record) => {
+      if (record.company_skills) {
+        const skills = record.company_skills
+          .split(",")
+          .map((skill) => skill.trim())
+          .filter(
+            (skill) =>
+              skill.length > 1 && skill.toLowerCase().includes(q.toLowerCase())
+          );
+
+        skills.forEach((skill) => {
+          // Only add skills that look like legitimate technical/professional skills
+          if (
+            skill.length >= 2 &&
+            (/^[A-Za-z]/.test(skill) ||
+              skill.includes(".") ||
+              skill.includes("#") ||
+              skill.includes("+") ||
+              skill.includes("/"))
+          ) {
+            skillsSet.add(skill);
+          }
+        });
+      }
+    });
+
+    // Convert to sorted array, limit to top 10 matches
+    const uniqueSkills = Array.from(skillsSet)
+      .sort((a, b) => {
+        // Prioritize exact matches and skills starting with search term
+        const aLower = a.toLowerCase();
+        const bLower = b.toLowerCase();
+        const qLower = q.toLowerCase();
+
+        if (aLower.startsWith(qLower) && !bLower.startsWith(qLower)) return -1;
+        if (!aLower.startsWith(qLower) && bLower.startsWith(qLower)) return 1;
+        return a.localeCompare(b);
+      })
+      .slice(0, 10);
+
+    return res.status(200).json({
+      success: true,
+      data: uniqueSkills,
+    });
+  } catch (err) {
+    console.error("SearchSkills error:", err);
     return res.status(500).json({
       success: false,
       message: "Server Error!",

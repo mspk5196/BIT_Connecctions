@@ -235,11 +235,14 @@ const FilterModal = ({
                 </h2>
                 <p className="text-slate-300 text-xs md:text-sm mt-1">
                   {getActiveFilterCount() > 0
-                    ? `${getActiveFilterCount()} active filters • ${contacts.length
-                    } contacts found`
-                    : `Filter from ${filterOptions.skills?.length || 0
-                    }+ skills, ${filterOptions.companies?.length || 0
-                    }+ companies, and more`}
+                    ? `${getActiveFilterCount()} active filters • ${
+                        contacts.length
+                      } contacts found`
+                    : `Filter from ${
+                        filterOptions.skills?.length || 0
+                      }+ skills, ${
+                        filterOptions.companies?.length || 0
+                      }+ companies, and more`}
                 </p>
               </div>
             </div>
@@ -538,7 +541,7 @@ const MiddleManHome = () => {
     has_next: false,
     has_previous: false,
   });
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -552,25 +555,30 @@ const MiddleManHome = () => {
   // ✅ INTERSECTION OBSERVER REFS
   const observerRef = useRef();
   const loadingTriggerRef = useRef();
-  const lastContactElementRef = useCallback((node) => {
-    if (loading || loadingMore) return;
-    if (observerRef.current) observerRef.current.disconnect();
-    
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && pagination.has_next) {
-          console.log("🔄 Loading more contacts via Intersection Observer...");
-          loadMoreContacts();
+  const lastContactElementRef = useCallback(
+    (node) => {
+      if (loading || loadingMore) return;
+      if (observerRef.current) observerRef.current.disconnect();
+
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && pagination.has_next) {
+            console.log(
+              "🔄 Loading more contacts via Intersection Observer..."
+            );
+            loadMoreContacts();
+          }
+        },
+        {
+          rootMargin: "200px", // Start loading 200px before the element is visible
+          threshold: 0.1,
         }
-      },
-      {
-        rootMargin: '200px', // Start loading 200px before the element is visible
-        threshold: 0.1,
-      }
-    );
-    
-    if (node) observerRef.current.observe(node);
-  }, [loading, loadingMore, pagination.has_next]);
+      );
+
+      if (node) observerRef.current.observe(node);
+    },
+    [loading, loadingMore, pagination.has_next]
+  );
 
   // Filter options from API
   const [filterOptions, setFilterOptions] = useState({
@@ -639,12 +647,12 @@ const MiddleManHome = () => {
       setShowScrollTop(window.scrollY > 500);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Fetch filter options with category filtering
@@ -715,7 +723,9 @@ const MiddleManHome = () => {
         }
       });
 
-      console.log(`🔍 Fetching contacts - Page ${page}, URL: /api/contacts/filter/?${params.toString()}`);
+      console.log(
+        `🔍 Fetching contacts - Page ${page}, URL: /api/contacts/filter/?${params.toString()}`
+      );
 
       const response = await api.get(
         `/api/contacts/filter/?${params.toString()}`
@@ -753,12 +763,14 @@ const MiddleManHome = () => {
       // Update contacts based on whether we're appending or replacing
       if (shouldAppend && page > 1) {
         setContacts((prevContacts) => [...prevContacts, ...formattedContacts]);
-        setAllContacts((prevContacts) => [...prevContacts, ...formattedContacts]);
+        setAllContacts((prevContacts) => [
+          ...prevContacts,
+          ...formattedContacts,
+        ]);
       } else {
         setContacts(formattedContacts);
         setAllContacts(formattedContacts);
       }
-
     } catch (error) {
       console.error("Failed to fetch contacts:", error);
       showAlert("error", "Failed to fetch contacts. Please try again.");
@@ -771,8 +783,11 @@ const MiddleManHome = () => {
   // ✅ LOAD MORE CONTACTS FUNCTION
   const loadMoreContacts = async () => {
     if (loadingMore || !pagination.has_next) return;
-    
-    console.log("🔄 Loading more contacts, next page:", pagination.current_page + 1);
+
+    console.log(
+      "🔄 Loading more contacts, next page:",
+      pagination.current_page + 1
+    );
     await fetchContacts(pagination.current_page + 1, true);
   };
 
@@ -784,21 +799,24 @@ const MiddleManHome = () => {
 
   // Debounced search to avoid too many API calls
   const [searchTimeout, setSearchTimeout] = useState(null);
-  
+
   useEffect(() => {
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     const timeoutId = setTimeout(() => {
       if (searchTerm !== undefined) {
-        console.log("🔍 Search debounced, fetching contacts with search:", searchTerm);
+        console.log(
+          "🔍 Search debounced, fetching contacts with search:",
+          searchTerm
+        );
         fetchContacts(1, false);
       }
     }, 500);
-    
+
     setSearchTimeout(timeoutId);
-    
+
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -851,7 +869,7 @@ const MiddleManHome = () => {
       state: {
         contact: user,
         isAddMode: true,
-        source: "middleman",
+        source: "edit",
         currentUserId: id,
         userRole: role,
         successCallback: {
@@ -968,7 +986,7 @@ const MiddleManHome = () => {
         position="bottom"
         duration={4000}
       />
-      
+
       {/* ✅ SCROLL TO TOP BUTTON */}
       {showScrollTop && (
         <button
@@ -998,8 +1016,9 @@ const MiddleManHome = () => {
             <p className="text-gray-600 mt-1">
               {role === "admin"
                 ? "View and manage all contact records across all categories (A, B, C)"
-                : `Manage your category ${role === "cata" ? "A" : role === "catb" ? "B" : "C"
-                } contact records`}
+                : `Manage your category ${
+                    role === "cata" ? "A" : role === "catb" ? "B" : "C"
+                  } contact records`}
             </p>
           </div>
         </div>
@@ -1026,10 +1045,11 @@ const MiddleManHome = () => {
             {/* Filter Button */}
             <button
               onClick={() => setIsFilterModalOpen(true)}
-              className={`relative flex items-center gap-2 px-4 py-3 border rounded-lg transition-colors ${getActiveFilterCount() > 0
-                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                }`}
+              className={`relative flex items-center gap-2 px-4 py-3 border rounded-lg transition-colors ${
+                getActiveFilterCount() > 0
+                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              }`}
               title="Open Filters"
             >
               <Filter size={20} />
@@ -1051,9 +1071,7 @@ const MiddleManHome = () => {
           {loading && (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600">
-                Loading contacts...
-              </span>
+              <span className="ml-2 text-gray-600">Loading contacts...</span>
             </div>
           )}
 
@@ -1063,7 +1081,8 @@ const MiddleManHome = () => {
               <div className="flex items-center gap-4">
                 <div className="text-sm text-gray-500">
                   <span className="font-medium text-gray-900">
-                    {pagination.total_contacts?.toLocaleString() || filteredContacts.length}
+                    {pagination.total_contacts?.toLocaleString() ||
+                      filteredContacts.length}
                   </span>{" "}
                   contacts found
                   {role === "admin" && (
@@ -1118,7 +1137,9 @@ const MiddleManHome = () => {
           {loadingMore && (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600">Loading more contacts...</span>
+              <span className="ml-2 text-gray-600">
+                Loading more contacts...
+              </span>
             </div>
           )}
 
