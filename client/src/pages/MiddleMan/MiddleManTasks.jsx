@@ -158,10 +158,23 @@ const TasksPage = () => {
         const category = getCategory(authStore.role);
 
         if (category) {
+          // Fetch all tasks (both pending and completed)
           const response = await api.get(
             `/api/get-tasks/?category=${category}`
           );
-          setTasks(response.data.data || []);
+          
+          console.log("API Response:", response.data);
+          
+          // Map tasks to include status field based on task_completion
+          const mappedTasks = (response.data.data || []).map(task => ({
+            ...task,
+            status: task.task_completion ? "completed" : "pending"
+          }));
+          
+          console.log("Mapped tasks:", mappedTasks);
+          console.log("Completed tasks count:", mappedTasks.filter(t => t.status === "completed").length);
+          
+          setTasks(mappedTasks);
           setTaskStats(
             response.data.stats || { total: 0, completed: 0, pending: 0 }
           );
@@ -193,7 +206,14 @@ const TasksPage = () => {
       });
 
       if (response.data.success) {
-        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+        // Update task status to completed instead of removing it
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.id === taskId
+              ? { ...task, status: "completed", task_completion: true }
+              : task
+          )
+        );
         setTaskStats((prevStats) => {
           const newStats = {
             ...prevStats,
@@ -238,10 +258,14 @@ const TasksPage = () => {
       task.task_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.task_description.toLowerCase().includes(searchTerm.toLowerCase());
 
+    const isCompleted = task.status === "completed";
+
     const matchesFilter =
-      filterType === "All" ||
-      (filterType === "Assigned" && task.task_type === "assigned") ||
-      (filterType === "Automated" && task.task_type === "automated");
+      filterType === "All" ? !isCompleted : // Show only pending tasks by default
+      filterType === "Completed" ? isCompleted : // Show only completed tasks
+      filterType === "Assigned" ? !isCompleted && task.task_type === "assigned" :
+      filterType === "Automated" ? !isCompleted && task.task_type === "automated" :
+      false;
 
     return matchesSearch && matchesFilter;
   });
@@ -262,6 +286,10 @@ const TasksPage = () => {
     } else if (filterType === "Automated") {
       return (
         taskStats.breakdown?.automated || { completed: 0, total: 0, pending: 0 }
+      );
+    } else if (filterType === "Completed") {
+      return (
+        taskStats.breakdown?.completed || { completed: 0, total: 0, pending: 0 }
       );
     }
     return { completed: 0, total: 0, pending: 0 };
@@ -301,8 +329,13 @@ const TasksPage = () => {
     return "text-gray-600";
   };
 
-  const TaskCard = ({ task }) => (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-gray-300 min-w-0">
+  const TaskCard = ({ task }) => {
+    const isCompleted = task.status === "completed";
+    
+    return (
+    <div className={`bg-white rounded-xl border p-6 hover:shadow-lg transition-all duration-200 min-w-0 ${
+      isCompleted ? 'border-green-300 bg-green-50/30' : 'border-gray-200 hover:border-gray-300'
+    }`}>
       <div className="flex items-start justify-between mb-4 min-w-0">
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
@@ -352,6 +385,11 @@ const TasksPage = () => {
                 ? "🤖 Automated"
                 : `📋 ${task.task_type}`}
             </span>
+            {isCompleted && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                ✓ Completed
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
@@ -396,16 +434,19 @@ const TasksPage = () => {
           <Eye size={16} />
           View Details
         </button>
-        <button
-          onClick={() => handleCompleteTask(task.id)}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          <CheckCircle2 size={16} />
-          Complete
-        </button>
+        {!isCompleted && (
+          <button
+            onClick={() => handleCompleteTask(task.id)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <CheckCircle2 size={16} />
+            Complete
+          </button>
+        )}
       </div>
     </div>
   );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -455,6 +496,7 @@ const TasksPage = () => {
                   <option value="All">All Tasks</option>
                   <option value="Assigned">Assigned</option>
                   <option value="Automated">Automated</option>
+                  <option value="Completed">Completed</option>
                 </select>
               </div>
             </div>
@@ -630,16 +672,24 @@ const TasksPage = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => {
-                    handleCompleteTask(selectedTask.id);
-                    closeModal();
-                  }}
-                  className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
-                >
-                  <CheckCircle2 size={18} />
-                  Complete Task
-                </button>
+                {selectedTask.status !== "completed" && (
+                  <button
+                    onClick={() => {
+                      handleCompleteTask(selectedTask.id);
+                      closeModal();
+                    }}
+                    className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    <CheckCircle2 size={18} />
+                    Complete Task
+                  </button>
+                )}
+                {selectedTask.status === "completed" && selectedTask.updated_at && (
+                  <div className="flex items-center gap-2 px-6 py-3 bg-green-100 text-green-700 rounded-lg font-medium">
+                    <CheckCircle2 size={18} />
+                    Completed on {new Date(selectedTask.updated_at).toLocaleDateString()}
+                  </div>
+                )}
                 <button
                   onClick={closeModal}
                   className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
