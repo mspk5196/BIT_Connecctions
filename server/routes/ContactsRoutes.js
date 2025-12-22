@@ -191,7 +191,7 @@ router.get(
 router.delete(
   "/delete-assignment/:assignmentId",
   verifyToken,
-  authorizeRoles("admin", "cata", "catb", "catc"),
+  authorizeRoles("admin", "cata", "catb", "catc", "user"),
   revokeAssignment
 );
 router.get(

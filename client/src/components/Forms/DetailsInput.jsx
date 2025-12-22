@@ -334,7 +334,7 @@ function DetailsInput() {
       ],
     },
     {
-      label: "Category",
+      label: "Category*",
       type: "select",
       name: "category",
       placeholder: "choose category",
