@@ -37,6 +37,7 @@ import {
   GetTasks,
   CompleteTask,
   CreateTask,
+  DeleteTask,
 } from "../controllers/TaskControllers.js";
 import {
   ImportContactsFromCSV,
@@ -249,6 +250,7 @@ router.put(
   CompleteTask
 );
 router.post("/create-task", verifyToken, authorizeRoles("admin"), CreateTask);
+router.delete("/delete-task/:id", verifyToken, authorizeRoles("admin"), DeleteTask);
 
 // History routes - Admin and middleman access
 router.get(
