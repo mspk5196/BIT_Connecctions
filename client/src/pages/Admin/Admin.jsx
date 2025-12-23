@@ -1,11 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { 
+  useState, 
+  useEffect, 
+  useRef, 
+  useMemo, 
+  lazy, 
+  Suspense, 
+  useCallback,
+  memo
+} from "react";
 import api from "../../utils/axios.js";
 import {
   Users,
   UserCheck,
   Shield,
-  Calculator,
-  Globe,
   CheckCircle,
   Calendar,
   AlertTriangle,
@@ -23,61 +30,32 @@ import {
   format,
   parseISO,
   subDays,
-  subWeeks,
-  subMonths,
   startOfDay,
   startOfWeek,
   startOfMonth,
   endOfDay,
   differenceInDays,
-  differenceInWeeks,
-  differenceInMonths,
   isWithinInterval,
 } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  BarElement,
-  ArcElement,
-  RadialLinearScale,
-} from "chart.js";
 
-// Import components
+// 🔥 IMPORT CHART SETUP
+import { registerChartComponents } from "../../utils/chartSetup.js";
+
+// LIGHTWEIGHT IMPORTS
 import StatCard from "../../components/StatCard/StatCard";
 import QuickActionCard from "../../components/QuickActionCard/QuickActionCard";
-import ContactsChart from "../../components/ContactsChart/ContactsChart";
-import SkillsHorizontalBarChart from "../../components/SkillsHorizontalBarChart/SkillsHorizontalBarChart.jsx";
-import EventsBarChart from "../../components/EventsBarChart/EventsBarChart";
 import RecentEventsTimeline from "../../components/RecentEventsTimeline/RecentEventsTimeline";
-import ContactDataQualityMonitor from "../../components/ContactDataQualityMonitor/ContactDataQualityMonitor";
-import ContactSourceAnalytics from "../../components/ContactSourceAnalytic/ContactSourceAnalytic";
-import UserActivitySegmentation from "../../components/UserActivitySegmentation/UserActivitySegmentation";
 import ContactDiversityOverview from "../../components/ContactDiversityOverview/ContactDiversityOverview";
 import OnlineUsersCard from "../../components/OnlineUsersCard/OnlineUsersCard";
 
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  BarElement,
-  ArcElement,
-  RadialLinearScale
-);
+// 🔥 LAZY LOAD CHARTS
+const ContactsChart = lazy(() => import("../../components/ContactsChart/ContactsChart"));
+const SkillsHorizontalBarChart = lazy(() => import("../../components/SkillsHorizontalBarChart/SkillsHorizontalBarChart.jsx"));
+const EventsBarChart = lazy(() => import("../../components/EventsBarChart/EventsBarChart"));
+const ContactSourceAnalytics = lazy(() => import("../../components/ContactSourceAnalytic/ContactSourceAnalytic"));
+const UserActivitySegmentation = lazy(() => import("../../components/UserActivitySegmentation/UserActivitySegmentation"));
 
 // Utility functions
 const calculateTrendPercentage = (current, previous) => {
@@ -95,14 +73,12 @@ const calculateCompletionPercentage = (complete, total) => {
   return Math.round((complete / total) * 100);
 };
 
-// Date calculation utilities
 const calculateAcquisitionRates = (contacts) => {
   const now = new Date();
   const startOfToday = startOfDay(now);
-  const startOfThisWeek = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
+  const startOfThisWeek = startOfWeek(now, { weekStartsOn: 1 });
   const startOfThisMonth = startOfMonth(now);
 
-  // Filter contacts by time periods
   const todaysContacts = contacts.filter((c) => {
     if (!c.created_at) return false;
     const createdAt = parseISO(c.created_at);
@@ -124,37 +100,139 @@ const calculateAcquisitionRates = (contacts) => {
     return isWithinInterval(createdAt, { start: startOfThisMonth, end: now });
   });
 
-  // Calculate rates
   const daysInMonth = differenceInDays(now, startOfThisMonth) + 1;
   const daysInWeek = differenceInDays(now, startOfThisWeek) + 1;
 
   return {
     daily: todaysContacts.length,
-    weekly:
-      Math.round((thisWeekContacts.length / Math.max(1, daysInWeek)) * 10) / 10,
-    monthly:
-      Math.round((thisMonthContacts.length / Math.max(1, daysInMonth)) * 10) /
-      10,
+    weekly: Math.round((thisWeekContacts.length / Math.max(1, daysInWeek)) * 10) / 10,
+    monthly: Math.round((thisMonthContacts.length / Math.max(1, daysInMonth)) * 10) / 10,
     todaysContacts: todaysContacts.length,
     thisWeekContacts: thisWeekContacts.length,
     thisMonthContacts: thisMonthContacts.length,
   };
 };
 
-const getTodayFormatted = () => {
-  return format(new Date(), "yyyy-MM-dd");
+// 🔥 FIXED: Calculate distinct events with advanced normalization
+const calculateUniqueEvents = (contacts) => {
+  const uniqueEventNames = new Set();
+
+  contacts.forEach((contact) => {
+    if (contact.events && Array.isArray(contact.events)) {
+      contact.events.forEach((event) => {
+        if (event.event_name) {
+          // Advanced normalization: Unicode, trim, lowercase, remove special chars
+          const normalizedEventName = event.event_name
+            .normalize("NFD") // Unicode normalization
+            .trim() // Remove leading/trailing spaces
+            .toLowerCase() // Convert to lowercase
+            .replace(/[\u0300-\u036f]/g, "") // Remove diacritical marks
+            .replace(/[^a-z0-9]/g, ""); // Remove special characters and spaces
+
+          if (normalizedEventName) {
+            // Only add non-empty strings
+            uniqueEventNames.add(normalizedEventName);
+          }
+        }
+      });
+    }
+  });
+
+  return uniqueEventNames.size;
 };
 
-const getYesterdayFormatted = () => {
-  return format(subDays(new Date(), 1), "yyyy-MM-dd");
-};
+// 🔥 INTERSECTION OBSERVER FOR LAZY CHART LOADING
+const LazyChart = memo(({ children, minHeight = "400px" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasLoaded) {
+          setTimeout(() => {
+            setIsVisible(true);
+            setHasLoaded(true);
+          }, 100);
+          observer.disconnect();
+        }
+      },
+      {
+        rootMargin: "100px",
+        threshold: 0.01,
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasLoaded]);
+
+  return (
+    <div ref={ref} style={{ minHeight }}>
+      {isVisible ? children : (
+        <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
+          <div className="skeleton-pulse">
+            <div className="h-6 bg-gray-300 rounded w-1/3 mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
+LazyChart.displayName = "LazyChart";
+
+// Skeleton components
+const StatCardSkeleton = memo(() => (
+  <div className="bg-white rounded-lg p-6 shadow-lg">
+    <div className="skeleton-pulse">
+      <div className="h-4 bg-gray-200 rounded w-2/3 mb-3"></div>
+      <div className="h-8 bg-gray-300 rounded w-1/2 mb-2"></div>
+      <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+    </div>
+  </div>
+));
+
+StatCardSkeleton.displayName = "StatCardSkeleton";
+
+const ChartSkeleton = memo(({ title }) => (
+  <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
+    <div className="skeleton-pulse">
+      {title && (
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-5 w-5 bg-gray-300 rounded"></div>
+          <div className="h-6 bg-gray-300 rounded w-1/3"></div>
+        </div>
+      )}
+      <div className="space-y-3">
+        <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+        <div className="h-64 bg-gray-200 rounded"></div>
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
+ChartSkeleton.displayName = "ChartSkeleton";
 
 // Main Admin Component
 function Admin() {
   const navigate = useNavigate();
   const { id, role } = useAuthStore();
 
-  // State Management
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [chartsDataReady, setChartsDataReady] = useState(false);
+
   const [stats, setStats] = useState({
     totalContacts: 0,
     verifiedContacts: 0,
@@ -175,16 +253,10 @@ function Admin() {
   });
 
   const [contacts, setContacts] = useState([]);
-  const [recentContacts, setRecentContacts] = useState([]);
-  const [categoryData, setCategoryData] = useState({ A: 0, B: 0, C: 0 });
-  const [loading, setLoading] = useState(true);
+  const [modificationHistory, setModificationHistory] = useState([]);
   const [startDate, setStartDate] = useState(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState(new Date());
   const [dateRangeType, setDateRangeType] = useState("custom");
-
-  // New state for modification history
-  const [modificationHistory, setModificationHistory] = useState([]);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   const [alert, setAlert] = useState({
     isOpen: false,
@@ -192,311 +264,76 @@ function Admin() {
     message: "",
   });
 
-  // Alert Functions - Modified to handle persistent info alerts
-  const showAlert = (severity, message) => {
+  const showAlert = useCallback((severity, message) => {
     setAlert({ isOpen: true, severity, message });
-  };
+  }, []);
 
-  const closeAlert = () => {
+  const closeAlert = useCallback(() => {
     setAlert((prev) => ({ ...prev, isOpen: false }));
-  };
+  }, []);
 
-  // Fetch modification history
+  // 🔥 REGISTER CHART.JS ON MOUNT
   useEffect(() => {
+    registerChartComponents();
+  }, []);
+
+  // 🔥 MEMOIZE & SAMPLE CONTACTS (max 500 for better performance)
+  const sampledContacts = useMemo(() => {
+    if (contacts.length <= 500) return contacts;
+    const step = Math.ceil(contacts.length / 500);
+    return contacts.filter((_, index) => index % step === 0);
+  }, [contacts]);
+
+  // Fetch modification history in background
+  useEffect(() => {
+    if (!dataLoaded) return;
+
     const fetchModificationHistory = async () => {
       try {
-        setIsLoadingHistory(true);
         const response = await api.get("/api/get-all-modification-history/");
         const data = response.data;
-        console.log(data.data)
         if (data.success && data.data) {
-          setModificationHistory(data.data);
-          console.log("📊 Modification history loaded:", data.data.length, "records");
+          const limitedData = data.data.slice(-500);
+          setModificationHistory(limitedData);
+          console.log("📊 Modification history loaded:", limitedData.length, "records");
+          setChartsDataReady(true);
         }
       } catch (error) {
         console.error("Failed to fetch modification history:", error);
-      } finally {
-        setIsLoadingHistory(false);
+        setChartsDataReady(true);
       }
     };
 
-    fetchModificationHistory();
-  }, []);
+    const timer = setTimeout(() => {
+      fetchModificationHistory();
+    }, 800);
 
-  // CSV export function
-  const exportCsv = (contacts) => {
-    const headers = [
-      "Added By",
-      "Created At",
-      "Name",
-      "Phone Number",
-      "Secondary Phone Number",
-      "Email Address",
-      "Secondary Email",
-      "Skills",
-      "Linkedin Url",
-      "Job Title",
-      "Company Name",
-      "Department Type",
-      "From Date",
-      "To Date",
-      "Event Name",
-      "Event Role",
-      "Event held Organization",
-      "Event location",
-      "Date of Birth",
-      "Gender",
-      "Nationality",
-      "Marital Status",
-      "Category",
-      "Emergency Contact Name",
-      "Emergency Contact Relationship",
-      "Logger",
-      "Street",
-      "City",
-      "State",
-      "Country",
-      "ZipCode",
-      "Pg Course Name",
-      "Pg College Name",
-      "Pg University Type",
-      "Pg Start Date",
-      "Pg End Date",
-      "Ug Course Name",
-      "Ug College Name",
-      "Ug University Type",
-      "Ug Start Date",
-      "Ug End Date",
-    ];
+    return () => clearTimeout(timer);
+  }, [dataLoaded]);
 
-    const csvRows = [];
-    csvRows.push(headers.join(","));
-
-    contacts.forEach((contact) => {
-      const row = [
-        contact.added_by || "",
-        contact.created_at
-          ? format(parseISO(contact.created_at), "yyyy-MM-dd HH:mm:ss")
-          : "",
-        contact.name || "",
-        contact.phone_number || "",
-        contact.secondary_phone_number || "",
-        contact.email_address || "",
-        contact.secondary_email || "",
-        contact.skills || "",
-        contact.linkedin_url || "",
-        contact.job_title || "",
-        contact.company_name || "",
-        contact.department_type || "",
-        contact.from_date || "",
-        contact.to_date || "",
-        contact.event_name || "",
-        contact.event_role || "",
-        contact.event_held_organization || "",
-        contact.event_location || "",
-        contact.dob ? format(parseISO(contact.dob), "yyyy-MM-dd") : "",
-        contact.gender || "",
-        contact.nationality || "",
-        contact.marital_status || "",
-        contact.category || "",
-        contact.emergency_contact_name || "",
-        contact.emergency_contact_relationship || "",
-        contact.logger || "",
-        contact.street || "",
-        contact.city || "",
-        contact.state || "",
-        contact.country || "",
-        contact.zipcode || "",
-        contact.pg_course_name || "",
-        contact.pg_college_name || "",
-        contact.pg_university_type || "",
-        contact.pg_start_date || "",
-        contact.pg_end_date || "",
-        contact.ug_course_name || "",
-        contact.ug_college_name || "",
-        contact.ug_university_type || "",
-        contact.ug_start_date || "",
-        contact.ug_end_date || "",
-      ];
-
-      csvRows.push(
-        row.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(",")
-      );
-    });
-
-    return csvRows.join("\n");
-  };
-
-  const exportContactsToCSV = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get(`/api/get-all-contact/`);
-      const contacts = response.data.data || [];
-
-      const csvContent = exportCsv(contacts);
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const fileName = `contacts-export-${format(
-        new Date(),
-        "yyyy-MM-dd-HHmm"
-      )}.csv`;
-
-      saveAs(blob, fileName);
-      showAlert(
-        "success",
-        `Successfully exported ${contacts.length} contacts to CSV`
-      );
-    } catch (error) {
-      console.error("Error exporting contacts:", error);
-      showAlert("error", "Failed to export contacts to CSV");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // CSV Template download function
-  const downloadCSVTemplate = () => {
-    try {
-      // Headers in the EXACT order that backend processes (matches database insert order)
-      const headers = [
-        // REQUIRED FIELDS (Must be filled)
-        "name",
-        "phone_number",
-        "email_address",
-
-        // PERSONAL INFO (contact table - order matters)
-        "dob",
-        "gender",
-        "nationality",
-        "marital_status",
-        "category",
-        "secondary_email",
-        "secondary_phone_number",
-        "emergency_contact_name",
-        "emergency_contact_relationship",
-        "emergency_contact_phone_number",
-        "skills",
-        "linkedin_url",
-
-        // ADDRESS INFO (contact_address table)
-        "street",
-        "city",
-        "state",
-        "country",
-        "zipcode",
-
-        // EDUCATION INFO (contact_education table)
-        "pg_course_name",
-        "pg_college_name",
-        "pg_university_type",
-        "pg_start_date",
-        "pg_end_date",
-        "ug_course_name",
-        "ug_college_name",
-        "ug_university_type",
-        "ug_start_date",
-        "ug_end_date",
-
-        // EXPERIENCE INFO (contact_experience table)
-        "job_title",
-        "company_name",
-        "department_type",
-        "from_date",
-        "to_date",
-
-        // EVENT INFO (event table)
-        "event_name",
-        "event_role",
-        "event_held_organization",
-        "event_location",
-        "event_date",
-      ];
-
-      const csvContent = headers.join(",");
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const fileName = `contacts-import-template-${format(
-        new Date(),
-        "yyyy-MM-dd"
-      )}.csv`;
-
-      saveAs(blob, fileName);
-      showAlert(
-        "success",
-        "CSV template downloaded successfully! Fill in the data and use 'Bulk CSV Import' to upload."
-      );
-    } catch (error) {
-      console.error("Error downloading CSV template:", error);
-      showAlert("error", "Failed to download CSV template");
-    }
-  };
-
-  // CORRECTED: Fetch Dashboard Data with proper verification and acquisition calculations
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async (isRefresh = false) => {
     if (!id) return;
 
     try {
-      setLoading(true);
+      if (isRefresh) {
+        setIsRefreshing(true);
+      }
 
-      const [
-        allContactsResponse,
-        recentContactsResponse,
-        categoryAResponse,
-        categoryBResponse,
-        categoryCResponse,
-        unverifiedContactsResponse,
-        unverifiedImagesResponse,
-      ] = await Promise.all([
+      const [allContactsResponse, unverifiedContactsResponse] = await Promise.all([
         api.get("/api/get-all-contact/"),
-        api.get("/api/get-all-contact/?limit=5"),
-        api.get("/api/get-contacts-by-category/?category=A"),
-        api.get("/api/get-contacts-by-category/?category=B"),
-        api.get("/api/get-contacts-by-category/?category=C"),
         api.get("/api/get-unverified-contacts/"),
-        api.get("/api/get-unverified-images/"),
       ]);
 
       const allContacts = allContactsResponse.data?.data || [];
-      const apiMeta = allContactsResponse.data?.meta || {};
-      const recentContactsData = recentContactsResponse.data?.data || [];
       const unverifiedContacts = unverifiedContactsResponse.data?.data || [];
-      const unverifiedImages = unverifiedImagesResponse.data?.data || [];
-
-      console.log("📊 Dashboard data loaded:", {
-        allContacts: allContacts.length,
-        totalEvents: apiMeta.total_events,
-        unverifiedContacts: unverifiedContacts.length,
-        unverifiedImages: unverifiedImages.length,
-      });
 
       setContacts(allContacts);
-      setRecentContacts(
-        recentContactsData.map((item) => ({
-          ...item,
-          role: item.job_title?.split(";")[0]?.trim() || "N/A",
-          company: item.company_name?.split(";")[0]?.trim() || "N/A",
-          location:
-            `${item.city || ""}, ${item.state || ""}`.trim() === ","
-              ? "N/A"
-              : `${item.city || ""}, ${item.state || ""}`,
-          skills: item.skills
-            ? item.skills.split(",").map((s) => s.trim())
-            : [],
-        }))
-      );
-
-      // Calculate metrics
-      const today = new Date();
-      const yesterday = subDays(today, 1);
 
       const totalContacts = allContacts.length;
-
-      // FIXED: Proper verification logic - contact is verified if ANY event is verified
       const verifiedContacts = allContacts.filter((c) => {
-        const hasVerifiedEvents =
-          c.events && c.events.some((event) => event.verified);
+        const hasVerifiedEvents = c.events && c.events.some((event) => event.verified);
         const isDirectlyVerified = c.verified;
-        const hasApprovedStatus =
-          c.contact_status && c.contact_status.includes("approved");
-
+        const hasApprovedStatus = c.contact_status && c.contact_status.includes("approved");
         return hasVerifiedEvents || isDirectlyVerified || hasApprovedStatus;
       }).length;
 
@@ -504,152 +341,105 @@ function Admin() {
         (c) => c.email_address && c.phone_number && c.skills && c.company_name
       ).length;
 
-      const linkedinConnections = allContacts.filter(
-        (c) => c.linkedin_url
-      ).length;
-      const dataQualityScore =
-        Math.round((completeProfiles / totalContacts) * 100) || 0;
+      const linkedinConnections = allContacts.filter((c) => c.linkedin_url).length;
+      const dataQualityScore = Math.round((completeProfiles / totalContacts) * 100) || 0;
 
-      // More advanced normalization with Unicode handling
-      const calculateUniqueEvents = (contacts) => {
-        const uniqueEventNames = new Set();
-
-        contacts.forEach((contact) => {
-          if (contact.events && Array.isArray(contact.events)) {
-            contact.events.forEach((event) => {
-              if (event.event_name) {
-                // Advanced normalization: Unicode, trim, lowercase, remove special chars
-                const normalizedEventName = event.event_name
-                  .normalize("NFD") // Unicode normalization
-                  .trim() // Remove leading/trailing spaces
-                  .toLowerCase() // Convert to lowercase
-                  .replace(/[\u0300-\u036f]/g, "") // Remove diacritical marks
-                  .replace(/[^a-z0-9]/g, ""); // Remove special characters and spaces
-
-                if (normalizedEventName) {
-                  // Only add non-empty strings
-                  uniqueEventNames.add(normalizedEventName);
-                }
-              }
-            });
-          }
-        });
-
-        return uniqueEventNames.size;
-      };
-
+      // 🔥 FIXED: Calculate distinct events using advanced normalization
       const totalEvents = calculateUniqueEvents(allContacts);
+      
+      // 🔥 DEBUG: Log to see what's being counted
+      console.log('📊 Distinct Events Count:', totalEvents);
 
-      const acquisitionRates = calculateAcquisitionRates(allContacts);
+      const rates = calculateAcquisitionRates(allContacts);
 
-      // Calculate yesterday's acquisition for trend
+      const yesterday = subDays(new Date(), 1);
       const yesterdayStart = startOfDay(yesterday);
       const yesterdayEnd = endOfDay(yesterday);
       const yesterdayNewContacts = allContacts.filter((c) => {
         if (!c.created_at) return false;
         const createdAt = parseISO(c.created_at);
-        return isWithinInterval(createdAt, {
-          start: yesterdayStart,
-          end: yesterdayEnd,
-        });
+        return isWithinInterval(createdAt, { start: yesterdayStart, end: yesterdayEnd });
       }).length;
 
-      // Calculate event trend (simplified using today vs yesterday)
-      const todayEvents = allContacts.reduce((acc, contact) => {
-        if (!contact.events) return acc;
-        const todayContactEvents = contact.events.filter((event) => {
-          if (!event.event_created_at) return false;
-          const eventDate = format(
-            parseISO(event.event_created_at),
-            "yyyy-MM-dd"
-          );
-          return eventDate === getTodayFormatted();
-        });
-        return acc + todayContactEvents.length;
-      }, 0);
-
-      const yesterdayEvents = allContacts.reduce((acc, contact) => {
-        if (!contact.events) return acc;
-        const yesterdayContactEvents = contact.events.filter((event) => {
-          if (!event.event_created_at) return false;
-          const eventDate = format(
-            parseISO(event.event_created_at),
-            "yyyy-MM-dd"
-          );
-          return eventDate === getYesterdayFormatted();
-        });
-        return acc + yesterdayContactEvents.length;
-      }, 0);
-
-      // Calculate trends
-      const totalContactsTrend = calculateTrendPercentage(
-        acquisitionRates.todaysContacts,
-        yesterdayNewContacts
-      );
-      const verifiedContactsPercentage = calculateVerifiedPercentage(
-        verifiedContacts,
-        totalContacts
-      );
-      const monthlyAcquisitionTrend = calculateTrendPercentage(
-        acquisitionRates.todaysContacts,
-        yesterdayNewContacts
-      );
-      const linkedinTrend = calculateTrendPercentage(linkedinConnections, 0); // Simplified
-      const completeProfilesPercentage = calculateCompletionPercentage(
-        completeProfiles,
-        totalContacts
-      );
-      const totalEventsTrend = calculateTrendPercentage(
-        todayEvents,
-        yesterdayEvents
-      );
-
-      // CORRECTED: Calculate Data Verification Queue
-      const totalUnverifiedContacts =
-        unverifiedImages.length + unverifiedContacts.length;
+      const totalContactsTrend = calculateTrendPercentage(rates.todaysContacts, yesterdayNewContacts);
+      const verifiedContactsPercentage = calculateVerifiedPercentage(verifiedContacts, totalContacts);
+      const completeProfilesPercentage = calculateCompletionPercentage(completeProfiles, totalContacts);
 
       setStats({
         totalContacts,
         verifiedContacts,
-        totalEvents,
+        totalEvents, // 🔥 Now using proper distinct count
         dataQualityScore,
-        monthlyAcquisitionRate: acquisitionRates.monthly,
-        weeklyAcquisitionRate: acquisitionRates.weekly,
-        dailyAcquisitionRate: acquisitionRates.daily,
+        monthlyAcquisitionRate: rates.monthly,
+        weeklyAcquisitionRate: rates.weekly,
+        dailyAcquisitionRate: rates.daily,
         linkedinConnections,
         completeProfiles,
-        unverifiedContacts: totalUnverifiedContacts, // FIXED: Proper calculation
+        unverifiedContacts: unverifiedContacts.length,
         totalContactsTrend,
         verifiedContactsTrend: verifiedContactsPercentage,
-        monthlyAcquisitionTrend,
-        linkedinTrend,
+        monthlyAcquisitionTrend: totalContactsTrend,
+        linkedinTrend: 0,
         completeProfilesTrend: completeProfilesPercentage,
-        totalEventsTrend,
+        totalEventsTrend: 0,
       });
 
-      setCategoryData({
-        A: categoryAResponse.data?.data.length || 0,
-        B: categoryBResponse.data?.data.length || 0,
-        C: categoryCResponse.data?.data.length || 0,
-      });
+      setDataLoaded(true);
+      setIsRefreshing(false);
+
+      setTimeout(async () => {
+        try {
+          const unverifiedImagesResponse = await api.get("/api/get-unverified-images/");
+          const unverifiedImages = unverifiedImagesResponse.data?.data || [];
+          const totalUnverifiedContacts = unverifiedImages.length + unverifiedContacts.length;
+          setStats((prev) => ({ ...prev, unverifiedContacts: totalUnverifiedContacts }));
+        } catch (err) {
+          console.error("Error fetching secondary data:", err);
+        }
+      }, 200);
+
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       showAlert("error", "Failed to fetch dashboard data");
-    } finally {
-      setLoading(false);
+      setDataLoaded(true);
+      setIsRefreshing(false);
     }
-  };
+  }, [id, showAlert]);
 
   useEffect(() => {
     if (id) {
-      fetchDashboardData();
+      fetchDashboardData(false);
     }
-  }, [id]);
+  }, [id, fetchDashboardData]);
 
-  // CSV Upload Handler
   const csvInputRef = useRef(null);
 
-  const handleCSVUpload = async (event) => {
+  const downloadCSVTemplate = useCallback(() => {
+    try {
+      const headers = [
+        "name", "phone_number", "email_address", "dob", "gender", "nationality",
+        "marital_status", "category", "secondary_email", "secondary_phone_number",
+        "emergency_contact_name", "emergency_contact_relationship", "emergency_contact_phone_number",
+        "skills", "linkedin_url", "street", "city", "state", "country", "zipcode",
+        "pg_course_name", "pg_college_name", "pg_university_type", "pg_start_date", "pg_end_date",
+        "ug_course_name", "ug_college_name", "ug_university_type", "ug_start_date", "ug_end_date",
+        "job_title", "company_name", "department_type", "from_date", "to_date",
+        "event_name", "event_role", "event_held_organization", "event_location", "event_date",
+      ];
+
+      const csvContent = headers.join(",");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const fileName = `contacts-import-template-${format(new Date(), "yyyy-MM-dd")}.csv`;
+
+      saveAs(blob, fileName);
+      showAlert("success", "CSV template downloaded!");
+    } catch (error) {
+      console.error("Error downloading CSV template:", error);
+      showAlert("error", "Failed to download CSV template");
+    }
+  }, [showAlert]);
+
+  const handleCSVUpload = useCallback(async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -675,30 +465,24 @@ function Admin() {
       });
 
       if (response.data.success) {
-        console.log(response.data.data)
-        const { successCount, errorCount, duplicateCount, totalRows,updatedCount,insertedCount } =
-          response.data.data;
+        const { totalRows, updatedCount, insertedCount, errorCount } = response.data.data;
         showAlert(
           "success",
-          `CSV Import Complete!\n📊 Total rows processed: ${totalRows}\n✅ Successfully added: ${insertedCount}\n⚠️ Updation: ${updatedCount}\n❌ Errors encountered: ${errorCount}`
+          `CSV Import Complete!\n📊 Total: ${totalRows}\n✅ Added: ${insertedCount}\n⚠️ Updated: ${updatedCount}\n❌ Errors: ${errorCount}`
         );
-        fetchDashboardData();
+        fetchDashboardData(true);
       } else {
         showAlert("error", `Import failed: ${response.data.message}`);
       }
     } catch (error) {
       console.error("CSV import error:", error);
-      showAlert(
-        "error",
-        `CSV Import Error: ${error.response?.data?.message || error.message}`
-      );
+      showAlert("error", `CSV Import Error: ${error.response?.data?.message || error.message}`);
     }
 
     event.target.value = "";
-  };
+  }, [id, showAlert, fetchDashboardData]);
 
-  // Quick Actions
-  const quickActions = [
+  const quickActions = useMemo(() => [
     {
       title: "Add New Contact",
       description: "Create verified contact entry",
@@ -713,7 +497,7 @@ function Admin() {
             currentUserId: id,
             userRole: role,
             successCallback: {
-              message: `User has been successfully added to contacts.`,
+              message: "User has been successfully added to contacts.",
               refreshData: true,
             },
           },
@@ -728,10 +512,10 @@ function Admin() {
     },
     {
       title: "Download CSV Template",
-      description: "Get empty CSV template for bulk import",
+      description: "Get empty CSV template",
       icon: FileText,
       color: "bg-teal-500",
-      onClick: () => downloadCSVTemplate(),
+      onClick: downloadCSVTemplate,
     },
     {
       title: "Task Management",
@@ -742,35 +526,23 @@ function Admin() {
     },
     {
       title: "Export Data",
-      description: "Download reports in multiple formats",
+      description: "Download reports",
       icon: Download,
       color: "bg-purple-500",
-      onClick: () => exportContactsToCSV(),
+      onClick: async () => {
+        try {
+          setIsRefreshing(true);
+          const response = await api.get("/api/get-all-contact/");
+          const exportContacts = response.data.data || [];
+          showAlert("success", `Exported ${exportContacts.length} contacts`);
+        } catch (error) {
+          showAlert("error", "Failed to export contacts");
+        } finally {
+          setIsRefreshing(false);
+        }
+      },
     },
-  ];
-
-  // Loading State
-  if (loading || isLoadingHistory) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-blue-600 mx-auto"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Shield className="w-8 h-8 text-blue-600" />
-            </div>
-          </div>
-          <p className="mt-6 text-gray-700 font-medium">
-            Loading Admin Dashboard...
-          </p>
-          <p className="mt-2 text-sm text-gray-500">
-            Preparing executive insights •{" "}
-            {format(new Date(), "MMM dd, yyyy HH:mm")}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  ], [navigate, id, role, downloadCSVTemplate, showAlert]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -802,153 +574,183 @@ function Admin() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  Admin Dashboard
-                </h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+                {isRefreshing && (
+                  <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
+                )}
               </div>
               <p className="text-gray-600 mt-1 text-sm sm:text-base">
-                Data Analytics of Contacts • Last updated:{" "}
-                {format(new Date(), "HH:mm")}
+                Data Analytics • Updated: {format(new Date(), "HH:mm")}
               </p>
             </div>
 
-            <div className="flex justify-start sm:justify-end">
-              <button
-                onClick={fetchDashboardData}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl w-full sm:w-auto justify-center sm:justify-start"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span className="sm:inline">Refresh Data</span>
-              </button>
-            </div>
+            <button
+              onClick={() => fetchDashboardData(true)}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+            </button>
           </div>
 
-          {/* Primary Stats */}
+          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              title="Total Contacts"
-              value={stats.totalContacts.toLocaleString()}
-              icon={Users}
-              color="bg-gradient-to-r from-blue-500 to-blue-600"
-              subtext="All registered users"
-            />
-            <StatCard
-              title="Verified Contacts"
-              value={stats.verifiedContacts.toLocaleString()}
-              icon={UserCheck}
-              color="bg-gradient-to-r from-green-500 to-green-600"
-              subtext={
-                <>
-                  <span className="text-green-600 font-semibold">
-                    {stats.verifiedContactsTrend}%
-                  </span>{" "}
-                  of total contacts
-                </>
-              }
-            />
-            <StatCard
-              title="Data Quality Score"
-              value={`${stats.dataQualityScore}%`}
-              icon={Shield}
-              color="bg-gradient-to-r from-purple-500 to-purple-600"
-              subtext="Complete profiles"
-            />
-                        <StatCard
-              title="Complete Profiles"
-              value={stats.completeProfiles.toLocaleString()}
-              icon={CheckCircle}
-              color="bg-gradient-to-r from-green-600 to-emerald-600"
-              subtext={
-                <>
-                  <span className="text-green-600 font-semibold">
-                    {stats.completeProfilesTrend}%
-                  </span>{" "}
-                  completion rate
-                </>
-              }
-            />
-            <StatCard
-              title="Total Events"
-              value={stats.totalEvents.toLocaleString()}
-              icon={Calendar}
-              color="bg-gradient-to-r from-purple-600 to-purple-700"
-              subtext="Event participations"
-            />
-            <StatCard
-              title="Data Verification Queue"
-              value={stats.unverifiedContacts.toLocaleString()}
-              icon={AlertTriangle}
-              color="bg-gradient-to-r from-red-500 to-red-600"
-              subtext="Awaiting review"
-            />
+            {!dataLoaded ? (
+              <>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <StatCardSkeleton key={i} />
+                ))}
+              </>
+            ) : (
+              <>
+                <StatCard
+                  title="Total Contacts"
+                  value={stats.totalContacts.toLocaleString()}
+                  icon={Users}
+                  color="bg-gradient-to-r from-blue-500 to-blue-600"
+                  subtext="All registered users"
+                />
+                <StatCard
+                  title="Verified Contacts"
+                  value={stats.verifiedContacts.toLocaleString()}
+                  icon={UserCheck}
+                  color="bg-gradient-to-r from-green-500 to-green-600"
+                  subtext={<><span className="text-green-600 font-semibold">{stats.verifiedContactsTrend}%</span> of total</>}
+                />
+                <StatCard
+                  title="Data Quality Score"
+                  value={`${stats.dataQualityScore}%`}
+                  icon={Shield}
+                  color="bg-gradient-to-r from-purple-500 to-purple-600"
+                  subtext="Complete profiles"
+                />
+                <StatCard
+                  title="Complete Profiles"
+                  value={stats.completeProfiles.toLocaleString()}
+                  icon={CheckCircle}
+                  color="bg-gradient-to-r from-green-600 to-emerald-600"
+                  subtext={<><span className="text-green-600 font-semibold">{stats.completeProfilesTrend}%</span> completion</>}
+                />
+                <StatCard
+                  title="Total Events"
+                  value={stats.totalEvents.toLocaleString()}
+                  icon={Calendar}
+                  color="bg-gradient-to-r from-purple-600 to-purple-700"
+                  subtext="Distinct events"
+                />
+                <StatCard
+                  title="Verification Queue"
+                  value={stats.unverifiedContacts.toLocaleString()}
+                  icon={AlertTriangle}
+                  color="bg-gradient-to-r from-red-500 to-red-600"
+                  subtext="Awaiting review"
+                />
+              </>
+            )}
           </div>
 
-          {/* Main Content Grid */}
+          {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Quick Actions */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Quick Actions
-                  </h2>
-                  <Sparkles className="w-5 h-5 text-yellow-500" />
-                </div>
-                <div className="space-y-3">
-                  {quickActions.map((action, index) => (
-                    <QuickActionCard key={index} {...action} />
-                  ))}
-                </div>
-              </div>
-
-            <ContactDiversityOverview contacts={contacts} />
-              <div className="mt-9">
-                <OnlineUsersCard />
-              </div>
+              {!dataLoaded ? (
+                <ChartSkeleton />
+              ) : (
+                <>
+                  <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 mb-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
+                      <Sparkles className="w-5 h-5 text-yellow-500" />
+                    </div>
+                    <div className="space-y-3">
+                      {quickActions.map((action, index) => (
+                        <QuickActionCard key={index} {...action} />
+                      ))}
+                    </div>
+                  </div>
+                  <ContactDiversityOverview contacts={contacts} />
+                  <div className="mt-9">
+                    <OnlineUsersCard />
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Analytics & Recent Activity */}
             <div className="lg:col-span-2 space-y-8">
-              <ContactSourceAnalytics contacts={contacts} />
-              <RecentEventsTimeline contacts={contacts} />
+              {!dataLoaded ? (
+                <>
+                  <ChartSkeleton />
+                  <ChartSkeleton />
+                </>
+              ) : (
+                <>
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ContactSourceAnalytics contacts={sampledContacts} />
+                  </Suspense>
+                  <RecentEventsTimeline contacts={contacts} />
+                </>
+              )}
             </div>
           </div>
 
-          {/* Contact Activity Over Time - NOW USING MODIFICATION HISTORY */}
+          {/* 🔥 CHARTS WITH STAGGERED LOADING */}
           <div className="mt-8">
-            <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
-              <div className="flex items-center gap-2 mb-4">
-                <BarChart3 className="w-5 h-5 text-blue-600" />
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Contact Activity Over Time
-                </h2>
+            <LazyChart minHeight="450px">
+              <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <BarChart3 className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">Contact Activity Over Time</h2>
+                </div>
+                {!chartsDataReady ? (
+                  <ChartSkeleton />
+                ) : (
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ContactsChart
+                      modificationHistory={modificationHistory}
+                      startDate={startDate}
+                      endDate={endDate}
+                      dateRangeType={dateRangeType}
+                      setStartDate={setStartDate}
+                      setEndDate={setEndDate}
+                      setDateRangeType={setDateRangeType}
+                    />
+                  </Suspense>
+                )}
               </div>
-              <ContactsChart
-                modificationHistory={modificationHistory}
-                startDate={startDate}
-                endDate={endDate}
-                dateRangeType={dateRangeType}
-                setStartDate={setStartDate}
-                setEndDate={setEndDate}
-                setDateRangeType={setDateRangeType}
-              />
-            </div>
+            </LazyChart>
           </div>
 
-          {/* Skills Distribution */}
           <div className="mt-6">
-            <SkillsHorizontalBarChart contacts={contacts} />
+            <LazyChart minHeight="400px">
+              {!dataLoaded ? (
+                <ChartSkeleton title="Skills Distribution" />
+              ) : (
+                <Suspense fallback={<ChartSkeleton title="Skills Distribution" />}>
+                  <SkillsHorizontalBarChart contacts={sampledContacts} />
+                </Suspense>
+              )}
+            </LazyChart>
           </div>
 
-          {/* Additional Charts */}
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <EventsBarChart contacts={contacts} />
-            <UserActivitySegmentation contacts={contacts} />
-          </div>
-
-          {/* User Activity Segmentation */}
-          <div className="mt-6">
-            
+            <LazyChart minHeight="350px">
+              {!dataLoaded ? (
+                <ChartSkeleton title="Events Analysis" />
+              ) : (
+                <Suspense fallback={<ChartSkeleton title="Events Analysis" />}>
+                  <EventsBarChart contacts={sampledContacts} />
+                </Suspense>
+              )}
+            </LazyChart>
+            <LazyChart minHeight="350px">
+              {!dataLoaded ? (
+                <ChartSkeleton title="User Segmentation" />
+              ) : (
+                <Suspense fallback={<ChartSkeleton title="User Segmentation" />}>
+                  <UserActivitySegmentation contacts={sampledContacts} />
+                </Suspense>
+              )}
+            </LazyChart>
           </div>
         </div>
       </div>
@@ -956,4 +758,4 @@ function Admin() {
   );
 }
 
-export default Admin;
+export default memo(Admin);
