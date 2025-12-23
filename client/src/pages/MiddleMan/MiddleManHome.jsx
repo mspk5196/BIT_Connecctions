@@ -198,6 +198,7 @@ const FilterModal = ({
   activeFilters,
   setActiveFilters,
   contacts,
+  pagination,
   setIsFilterModalOpen,
   getActiveFilterCount,
   clearFilters,
@@ -492,10 +493,10 @@ const FilterModal = ({
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-6">
               <div className="text-sm text-gray-600">
                 <span className="font-semibold text-lg text-gray-900">
-                  {contacts.length.toLocaleString()}
+                  {pagination.total_contacts.toLocaleString()}
                 </span>
                 <span className="ml-2">
-                  contact{contacts.length !== 1 ? "s" : ""} found
+                  contact{pagination.total_contacts !== 1 ? "s" : ""} found
                 </span>
               </div>
               {getActiveFilterCount() > 0 && (
@@ -1174,6 +1175,7 @@ const MiddleManHome = () => {
           activeFilters={activeFilters}
           setActiveFilters={setActiveFilters}
           contacts={contacts}
+          pagination={pagination}
           setIsFilterModalOpen={setIsFilterModalOpen}
           getActiveFilterCount={getActiveFilterCount}
           clearFilters={clearFilters}
