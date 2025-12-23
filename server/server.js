@@ -61,7 +61,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/auth", authRoute);
 app.use("/api", ContactRoute);
 app.use("/auth", googleAuthRoute);
-app.listen(8000,"0.0.0.0", () => {
+app.listen(8000,'0.0.0.0', () => {
   console.log("Server is running on port 8000");
 });
 
@@ -69,9 +69,3 @@ app.listen(8000,"0.0.0.0", () => {
 // AuthStore updates → PrivateRoutes allows access → Applayout renders → 
 // Every request uses axios → Sends cookies → AuthMiddleware verifies → 
 // Protected routes accessible
-
-
-
-
-
-
