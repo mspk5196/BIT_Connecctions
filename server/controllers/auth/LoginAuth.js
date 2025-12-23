@@ -26,8 +26,9 @@ export const loginUser = async (req, res) => {
             // Send token as httpOnly cookie
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // true in production
-                sameSite: 'Strict',
+                secure:true, // true in production
+                // sameSite: 'Strict',
+                sameSite: 'none',
                 maxAge: 3600000 // 1 hour
             });
 
