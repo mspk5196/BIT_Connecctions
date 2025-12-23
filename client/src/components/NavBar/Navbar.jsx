@@ -121,7 +121,7 @@ function Navbar() {
       { name: "Refer Others", icon: <Waypoints size={20} />, path: "/refer" },
     ],
   };
-  
+
   // Get the menu items for the current role
   const currentMenuItems = menuItemsByRole[role] || [];
 
@@ -155,7 +155,7 @@ function Navbar() {
       {isMobile && (
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="fixed z-[60] p-2 md:hidden hover:shadow-xl transition-all duration-200"
+          className="fixed z-[60] p-2 md:hidden"
           aria-label="Toggle mobile menu"
         >
           {mobileMenuOpen ? (
@@ -179,10 +179,10 @@ function Navbar() {
         className={`
           ${
             isMobile
-              ? `fixed left-0 top-0 z-40 h-full bg-gray-50 border-r border-gray-200 transition-transform duration-300 ease-in-out transform ${
+              ? `fixed left-0 top-0 z-40 h-full bg-gray-50 border-r border-gray-200 ${
                   mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
                 } w-64 shadow-lg flex flex-col`
-              : `h-screen bg-gray-50 border-r border-gray-200 transition-all duration-500 ease-in-out transform flex flex-col ${
+              : `h-screen bg-gray-50 border-r border-gray-200 flex flex-col ${
                   collapsed ? "w-20 shadow-sm" : "w-58 shadow-md"
                 }`
           }
@@ -193,10 +193,10 @@ function Navbar() {
           {!isMobile && (
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className={`p-2 rounded-md hover:bg-gray-100 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95`}
+              className={`p-2 rounded-md hover:bg-gray-100`}
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              <span className="transform transition-transform duration-500 ease-in-out inline-block">
+              <span className="inline-block">
                 {collapsed ? (
                   <ChevronRight size={20} />
                 ) : (
@@ -241,18 +241,18 @@ function Navbar() {
               return (
                 <div key={index}>
                   <button
-                    className={`w-full flex items-center gap-3 p-3 rounded-sm text-left transition-all duration-300 ease-in-out transform group overflow-hidden hover:shadow-sm
+                    className={`w-full flex items-center gap-3 p-3 rounded-sm text-left group overflow-hidden
                                         ${
                                           active
-                                            ? "bg-[#4071f4] scale-102"
-                                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:scale-[1.02]"
+                                            ? "bg-[#4071f4]"
+                                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                                         }`}
                     title={!isMobile && collapsed ? menuItem.name : undefined}
                     onClick={() => navigate(menuItem.path)}
                   >
                     <span
-                      className={`flex-shrink-0 transition-all duration-300 transform ${
-                        !isMobile && collapsed ? "pl-0.5 scale-110" : "pl-2"
+                      className={`flex-shrink-0 ${
+                        !isMobile && collapsed ? "pl-0.5" : "pl-2"
                       } ${
                         active
                           ? "text-white"
@@ -262,10 +262,10 @@ function Navbar() {
                       {menuItem.icon}
                     </span>
                     <span
-                      className={`font-medium whitespace-nowrap transition-all duration-500 ease-in-out transform ${
+                      className={`font-medium whitespace-nowrap ${
                         !isMobile && collapsed
-                          ? "opacity-0 -translate-x-4 scale-95 w-0 ml-0"
-                          : "opacity-100 translate-x-0 scale-100 w-auto ml-1"
+                          ? "opacity-0 w-0 ml-0"
+                          : "opacity-100 w-auto ml-1"
                       } ${
                         active
                           ? "text-white"
@@ -292,31 +292,29 @@ function Navbar() {
               return (
                 <div key={index}>
                   <button
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-300 ease-in-out transform group overflow-hidden
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg text-left group overflow-hidden
                                         ${
                                           active
-                                            ? "bg-red-50 text-red-700 border border-red-200 scale-102"
-                                            : "hover:bg-gray-50 hover:text-gray-900 hover:scale-[1.02] hover:shadow-sm"
+                                            ? "bg-red-50 text-red-700 border border-red-200"
+                                            : "hover:bg-gray-50 hover:text-gray-900"
                                         }`}
                     title={!isMobile && collapsed ? menuItem.name : undefined}
                     onClick={menuItem.action}
                   >
                     <span
-                      className={`flex-shrink-0 transition-all duration-300 transform ${
-                        !isMobile && collapsed ? "pl-0.5 scale-110" : "pl-2"
+                      className={`flex-shrink-0 ${
+                        !isMobile && collapsed ? "pl-0.5" : "pl-2"
                       } text-[#787878] ${
-                        active
-                          ? "text-red-700"
-                          : "text-gray-500 group-hover:rotate-6"
+                        active ? "text-red-700" : "text-gray-500"
                       }`}
                     >
                       {menuItem.icon}
                     </span>
                     <span
-                      className={`font-medium text-[#787878] whitespace-nowrap transition-all duration-500 ease-in-out transform ${
+                      className={`font-medium text-[#787878] whitespace-nowrap ${
                         !isMobile && collapsed
-                          ? "opacity-0 -translate-x-4 scale-95 w-0 ml-0"
-                          : "opacity-100 translate-x-0 scale-100 w-auto ml-1"
+                          ? "opacity-0 w-0 ml-0"
+                          : "opacity-100 w-auto ml-1"
                       }`}
                     >
                       {menuItem.name}
