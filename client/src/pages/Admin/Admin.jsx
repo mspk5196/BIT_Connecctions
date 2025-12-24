@@ -1,12 +1,12 @@
-import React, { 
-  useState, 
-  useEffect, 
-  useRef, 
-  useMemo, 
-  lazy, 
-  Suspense, 
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  lazy,
+  Suspense,
   useCallback,
-  memo
+  memo,
 } from "react";
 import api from "../../utils/axios.js";
 import {
@@ -51,11 +51,23 @@ import ContactDiversityOverview from "../../components/ContactDiversityOverview/
 import OnlineUsersCard from "../../components/OnlineUsersCard/OnlineUsersCard";
 
 // 🔥 LAZY LOAD CHARTS
-const ContactsChart = lazy(() => import("../../components/ContactsChart/ContactsChart"));
-const SkillsHorizontalBarChart = lazy(() => import("../../components/SkillsHorizontalBarChart/SkillsHorizontalBarChart.jsx"));
-const EventsBarChart = lazy(() => import("../../components/EventsBarChart/EventsBarChart"));
-const ContactSourceAnalytics = lazy(() => import("../../components/ContactSourceAnalytic/ContactSourceAnalytic"));
-const UserActivitySegmentation = lazy(() => import("../../components/UserActivitySegmentation/UserActivitySegmentation"));
+const ContactsChart = lazy(() =>
+  import("../../components/ContactsChart/ContactsChart")
+);
+const SkillsHorizontalBarChart = lazy(() =>
+  import(
+    "../../components/SkillsHorizontalBarChart/SkillsHorizontalBarChart.jsx"
+  )
+);
+const EventsBarChart = lazy(() =>
+  import("../../components/EventsBarChart/EventsBarChart")
+);
+const ContactSourceAnalytics = lazy(() =>
+  import("../../components/ContactSourceAnalytic/ContactSourceAnalytic")
+);
+const UserActivitySegmentation = lazy(() =>
+  import("../../components/UserActivitySegmentation/UserActivitySegmentation")
+);
 
 // Utility functions
 const calculateTrendPercentage = (current, previous) => {
@@ -105,8 +117,11 @@ const calculateAcquisitionRates = (contacts) => {
 
   return {
     daily: todaysContacts.length,
-    weekly: Math.round((thisWeekContacts.length / Math.max(1, daysInWeek)) * 10) / 10,
-    monthly: Math.round((thisMonthContacts.length / Math.max(1, daysInMonth)) * 10) / 10,
+    weekly:
+      Math.round((thisWeekContacts.length / Math.max(1, daysInWeek)) * 10) / 10,
+    monthly:
+      Math.round((thisMonthContacts.length / Math.max(1, daysInMonth)) * 10) /
+      10,
     todaysContacts: todaysContacts.length,
     thisWeekContacts: thisWeekContacts.length,
     thisMonthContacts: thisMonthContacts.length,
@@ -173,7 +188,9 @@ const LazyChart = memo(({ children, minHeight = "400px" }) => {
 
   return (
     <div ref={ref} style={{ minHeight }}>
-      {isVisible ? children : (
+      {isVisible ? (
+        children
+      ) : (
         <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
           <div className="skeleton-pulse">
             <div className="h-6 bg-gray-300 rounded w-1/3 mb-4"></div>
@@ -295,7 +312,11 @@ function Admin() {
         if (data.success && data.data) {
           const limitedData = data.data.slice(-500);
           setModificationHistory(limitedData);
-          console.log("📊 Modification history loaded:", limitedData.length, "records");
+          console.log(
+            "📊 Modification history loaded:",
+            limitedData.length,
+            "records"
+          );
           setChartsDataReady(true);
         }
       } catch (error) {
@@ -311,100 +332,126 @@ function Admin() {
     return () => clearTimeout(timer);
   }, [dataLoaded]);
 
-  const fetchDashboardData = useCallback(async (isRefresh = false) => {
-    if (!id) return;
+  const fetchDashboardData = useCallback(
+    async (isRefresh = false) => {
+      if (!id) return;
 
-    try {
-      if (isRefresh) {
-        setIsRefreshing(true);
-      }
-
-      const [allContactsResponse, unverifiedContactsResponse] = await Promise.all([
-        api.get("/api/get-all-contact/"),
-        api.get("/api/get-unverified-contacts/"),
-      ]);
-
-      const allContacts = allContactsResponse.data?.data || [];
-      const unverifiedContacts = unverifiedContactsResponse.data?.data || [];
-
-      setContacts(allContacts);
-
-      const totalContacts = allContacts.length;
-      const verifiedContacts = allContacts.filter((c) => {
-        const hasVerifiedEvents = c.events && c.events.some((event) => event.verified);
-        const isDirectlyVerified = c.verified;
-        const hasApprovedStatus = c.contact_status && c.contact_status.includes("approved");
-        return hasVerifiedEvents || isDirectlyVerified || hasApprovedStatus;
-      }).length;
-
-      const completeProfiles = allContacts.filter(
-        (c) => c.email_address && c.phone_number && c.skills && c.company_name
-      ).length;
-
-      const linkedinConnections = allContacts.filter((c) => c.linkedin_url).length;
-      const dataQualityScore = Math.round((completeProfiles / totalContacts) * 100) || 0;
-
-      // 🔥 FIXED: Calculate distinct events using advanced normalization
-      const totalEvents = calculateUniqueEvents(allContacts);
-      
-      // 🔥 DEBUG: Log to see what's being counted
-      console.log('📊 Distinct Events Count:', totalEvents);
-
-      const rates = calculateAcquisitionRates(allContacts);
-
-      const yesterday = subDays(new Date(), 1);
-      const yesterdayStart = startOfDay(yesterday);
-      const yesterdayEnd = endOfDay(yesterday);
-      const yesterdayNewContacts = allContacts.filter((c) => {
-        if (!c.created_at) return false;
-        const createdAt = parseISO(c.created_at);
-        return isWithinInterval(createdAt, { start: yesterdayStart, end: yesterdayEnd });
-      }).length;
-
-      const totalContactsTrend = calculateTrendPercentage(rates.todaysContacts, yesterdayNewContacts);
-      const verifiedContactsPercentage = calculateVerifiedPercentage(verifiedContacts, totalContacts);
-      const completeProfilesPercentage = calculateCompletionPercentage(completeProfiles, totalContacts);
-
-      setStats({
-        totalContacts,
-        verifiedContacts,
-        totalEvents, // 🔥 Now using proper distinct count
-        dataQualityScore,
-        monthlyAcquisitionRate: rates.monthly,
-        weeklyAcquisitionRate: rates.weekly,
-        dailyAcquisitionRate: rates.daily,
-        linkedinConnections,
-        completeProfiles,
-        unverifiedContacts: unverifiedContacts.length,
-        totalContactsTrend,
-        verifiedContactsTrend: verifiedContactsPercentage,
-        monthlyAcquisitionTrend: totalContactsTrend,
-        linkedinTrend: 0,
-        completeProfilesTrend: completeProfilesPercentage,
-        totalEventsTrend: 0,
-      });
-
-      setDataLoaded(true);
-      setIsRefreshing(false);
-
-      setTimeout(async () => {
-        try {
-          const unverifiedImagesResponse = await api.get("/api/get-unverified-images/");
-          const unverifiedImages = unverifiedImagesResponse.data?.data || [];
-          const totalUnverifiedContacts = unverifiedImages.length + unverifiedContacts.length;
-          setStats((prev) => ({ ...prev, unverifiedContacts: totalUnverifiedContacts }));
-        } catch (err) {
-          console.error("Error fetching secondary data:", err);
+      try {
+        if (isRefresh) {
+          setIsRefreshing(true);
         }
-      }, 200);
 
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      showAlert("error", "Failed to fetch dashboard data");
-      setDataLoaded(true);
-      setIsRefreshing(false);
-    }
-  }, [id, showAlert]);
+        const [allContactsResponse, unverifiedContactsResponse] =
+          await Promise.all([
+            api.get("/api/get-all-contact/"),
+            api.get("/api/get-unverified-contacts/"),
+          ]);
+
+        const allContacts = allContactsResponse.data?.data || [];
+        const unverifiedContacts = unverifiedContactsResponse.data?.data || [];
+
+        setContacts(allContacts);
+
+        const totalContacts = allContacts.length;
+        const verifiedContacts = allContacts.filter((c) => {
+          const hasVerifiedEvents =
+            c.events && c.events.some((event) => event.verified);
+          const isDirectlyVerified = c.verified;
+          const hasApprovedStatus =
+            c.contact_status && c.contact_status.includes("approved");
+          return hasVerifiedEvents || isDirectlyVerified || hasApprovedStatus;
+        }).length;
+
+        const completeProfiles = allContacts.filter(
+          (c) => c.email_address && c.phone_number && c.skills && c.company_name
+        ).length;
+
+        const linkedinConnections = allContacts.filter(
+          (c) => c.linkedin_url
+        ).length;
+        const dataQualityScore =
+          Math.round((completeProfiles / totalContacts) * 100) || 0;
+
+        // 🔥 FIXED: Calculate distinct events using advanced normalization
+        const totalEvents = calculateUniqueEvents(allContacts);
+
+        // 🔥 DEBUG: Log to see what's being counted
+        console.log("📊 Distinct Events Count:", totalEvents);
+
+        const rates = calculateAcquisitionRates(allContacts);
+
+        const yesterday = subDays(new Date(), 1);
+        const yesterdayStart = startOfDay(yesterday);
+        const yesterdayEnd = endOfDay(yesterday);
+        const yesterdayNewContacts = allContacts.filter((c) => {
+          if (!c.created_at) return false;
+          const createdAt = parseISO(c.created_at);
+          return isWithinInterval(createdAt, {
+            start: yesterdayStart,
+            end: yesterdayEnd,
+          });
+        }).length;
+
+        const totalContactsTrend = calculateTrendPercentage(
+          rates.todaysContacts,
+          yesterdayNewContacts
+        );
+        const verifiedContactsPercentage = calculateVerifiedPercentage(
+          verifiedContacts,
+          totalContacts
+        );
+        const completeProfilesPercentage = calculateCompletionPercentage(
+          completeProfiles,
+          totalContacts
+        );
+
+        setStats({
+          totalContacts,
+          verifiedContacts,
+          totalEvents, // 🔥 Now using proper distinct count
+          dataQualityScore,
+          monthlyAcquisitionRate: rates.monthly,
+          weeklyAcquisitionRate: rates.weekly,
+          dailyAcquisitionRate: rates.daily,
+          linkedinConnections,
+          completeProfiles,
+          unverifiedContacts: unverifiedContacts.length,
+          totalContactsTrend,
+          verifiedContactsTrend: verifiedContactsPercentage,
+          monthlyAcquisitionTrend: totalContactsTrend,
+          linkedinTrend: 0,
+          completeProfilesTrend: completeProfilesPercentage,
+          totalEventsTrend: 0,
+        });
+
+        setDataLoaded(true);
+        setIsRefreshing(false);
+
+        setTimeout(async () => {
+          try {
+            const unverifiedImagesResponse = await api.get(
+              "/api/get-unverified-images/"
+            );
+            const unverifiedImages = unverifiedImagesResponse.data?.data || [];
+            const totalUnverifiedContacts =
+              unverifiedImages.length + unverifiedContacts.length;
+            setStats((prev) => ({
+              ...prev,
+              unverifiedContacts: totalUnverifiedContacts,
+            }));
+          } catch (err) {
+            console.error("Error fetching secondary data:", err);
+          }
+        }, 200);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        showAlert("error", "Failed to fetch dashboard data");
+        setDataLoaded(true);
+        setIsRefreshing(false);
+      }
+    },
+    [id, showAlert]
+  );
 
   useEffect(() => {
     if (id) {
@@ -417,19 +464,54 @@ function Admin() {
   const downloadCSVTemplate = useCallback(() => {
     try {
       const headers = [
-        "name", "phone_number", "email_address", "dob", "gender", "nationality",
-        "marital_status", "category", "secondary_email", "secondary_phone_number",
-        "emergency_contact_name", "emergency_contact_relationship", "emergency_contact_phone_number",
-        "skills", "linkedin_url", "street", "city", "state", "country", "zipcode",
-        "pg_course_name", "pg_college_name", "pg_university_type", "pg_start_date", "pg_end_date",
-        "ug_course_name", "ug_college_name", "ug_university_type", "ug_start_date", "ug_end_date",
-        "job_title", "company_name", "department_type", "from_date", "to_date",
-        "event_name", "event_role", "event_held_organization", "event_location", "event_date",
+        "name",
+        "phone_number",
+        "email_address",
+        "dob",
+        "gender",
+        "nationality",
+        "marital_status",
+        "category",
+        "secondary_email",
+        "secondary_phone_number",
+        "emergency_contact_name",
+        "emergency_contact_relationship",
+        "emergency_contact_phone_number",
+        "skills",
+        "linkedin_url",
+        "street",
+        "city",
+        "state",
+        "country",
+        "zipcode",
+        "pg_course_name",
+        "pg_college_name",
+        "pg_university_type",
+        "pg_start_date",
+        "pg_end_date",
+        "ug_course_name",
+        "ug_college_name",
+        "ug_university_type",
+        "ug_start_date",
+        "ug_end_date",
+        "job_title",
+        "company_name",
+        "department_type",
+        "from_date",
+        "to_date",
+        "event_name",
+        "event_role",
+        "event_held_organization",
+        "event_location",
+        "event_date",
       ];
 
       const csvContent = headers.join(",");
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const fileName = `contacts-import-template-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      const fileName = `contacts-import-template-${format(
+        new Date(),
+        "yyyy-MM-dd"
+      )}.csv`;
 
       saveAs(blob, fileName);
       showAlert("success", "CSV template downloaded!");
@@ -439,110 +521,309 @@ function Admin() {
     }
   }, [showAlert]);
 
-  const handleCSVUpload = useCallback(async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  const handleCSVUpload = useCallback(
+    async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
 
-    if (!file.name.endsWith(".csv") && file.type !== "text/csv") {
-      showAlert("error", "Please select a valid CSV file");
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      showAlert("error", "File size too large. Maximum 10MB allowed.");
-      return;
-    }
-
-    showAlert("info", "Processing CSV file...");
-
-    try {
-      const formData = new FormData();
-      formData.append("csv_file", file);
-      formData.append("created_by", id);
-
-      const response = await api.post("/api/import-csv", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (response.data.success) {
-        const { totalRows, updatedCount, insertedCount, errorCount } = response.data.data;
-        showAlert(
-          "success",
-          `CSV Import Complete!\n📊 Total: ${totalRows}\n✅ Added: ${insertedCount}\n⚠️ Updated: ${updatedCount}\n❌ Errors: ${errorCount}`
-        );
-        fetchDashboardData(true);
-      } else {
-        showAlert("error", `Import failed: ${response.data.message}`);
+      if (!file.name.endsWith(".csv") && file.type !== "text/csv") {
+        showAlert("error", "Please select a valid CSV file");
+        return;
       }
-    } catch (error) {
-      console.error("CSV import error:", error);
-      showAlert("error", `CSV Import Error: ${error.response?.data?.message || error.message}`);
-    }
 
-    event.target.value = "";
-  }, [id, showAlert, fetchDashboardData]);
+      if (file.size > 10 * 1024 * 1024) {
+        showAlert("error", "File size too large. Maximum 10MB allowed.");
+        return;
+      }
 
-  const quickActions = useMemo(() => [
-    {
-      title: "Add New Contact",
-      description: "Create verified contact entry",
-      icon: Users,
-      color: "bg-blue-500",
-      onClick: () =>
-        navigate("/details-input", {
-          state: {
-            contact: null,
-            isAddMode: true,
-            source: "admin",
-            currentUserId: id,
-            userRole: role,
-            successCallback: {
-              message: "User has been successfully added to contacts.",
-              refreshData: true,
-            },
-          },
-        }),
-    },
-    {
-      title: "Bulk CSV Import",
-      description: "Import verified contacts",
-      icon: UserCheck,
-      color: "bg-orange-500",
-      onClick: () => csvInputRef.current?.click(),
-    },
-    {
-      title: "Download CSV Template",
-      description: "Get empty CSV template",
-      icon: FileText,
-      color: "bg-teal-500",
-      onClick: downloadCSVTemplate,
-    },
-    {
-      title: "Task Management",
-      description: "Create & assign tasks",
-      icon: Handshake,
-      color: "bg-green-500",
-      onClick: () => navigate("/task-assignments"),
-    },
-    {
-      title: "Export Data",
-      description: "Download reports",
-      icon: Download,
-      color: "bg-purple-500",
-      onClick: async () => {
-        try {
-          setIsRefreshing(true);
-          const response = await api.get("/api/get-all-contact/");
-          const exportContacts = response.data.data || [];
-          showAlert("success", `Exported ${exportContacts.length} contacts`);
-        } catch (error) {
-          showAlert("error", "Failed to export contacts");
-        } finally {
-          setIsRefreshing(false);
+      showAlert("info", "Processing CSV file...");
+
+      try {
+        const formData = new FormData();
+        formData.append("csv_file", file);
+        formData.append("created_by", id);
+
+        const response = await api.post("/api/import-csv", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        if (response.data.success) {
+          const { totalRows, updatedCount, insertedCount, errorCount } =
+            response.data.data;
+          showAlert(
+            "success",
+            `CSV Import Complete!\n📊 Total: ${totalRows}\n✅ Added: ${insertedCount}\n⚠️ Updated: ${updatedCount}\n❌ Errors: ${errorCount}`
+          );
+          fetchDashboardData(true);
+        } else {
+          showAlert("error", `Import failed: ${response.data.message}`);
         }
-      },
+      } catch (error) {
+        console.error("CSV import error:", error);
+        showAlert(
+          "error",
+          `CSV Import Error: ${error.response?.data?.message || error.message}`
+        );
+      }
+
+      event.target.value = "";
     },
-  ], [navigate, id, role, downloadCSVTemplate, showAlert]);
+    [id, showAlert, fetchDashboardData]
+  );
+
+  const quickActions = useMemo(
+    () => [
+      {
+        title: "Add New Contact",
+        description: "Create verified contact entry",
+        icon: Users,
+        color: "bg-blue-500",
+        onClick: () =>
+          navigate("/details-input", {
+            state: {
+              contact: null,
+              isAddMode: true,
+              source: "admin",
+              currentUserId: id,
+              userRole: role,
+              successCallback: {
+                message: "User has been successfully added to contacts.",
+                refreshData: true,
+              },
+            },
+          }),
+      },
+      {
+        title: "Bulk CSV Import",
+        description: "Import verified contacts",
+        icon: UserCheck,
+        color: "bg-orange-500",
+        onClick: () => csvInputRef.current?.click(),
+      },
+      {
+        title: "Download CSV Template",
+        description: "Get empty CSV template",
+        icon: FileText,
+        color: "bg-teal-500",
+        onClick: downloadCSVTemplate,
+      },
+      {
+        title: "Task Management",
+        description: "Create & assign tasks",
+        icon: Handshake,
+        color: "bg-green-500",
+        onClick: () => navigate("/task-assignments"),
+      },
+      {
+        title: "Export Data",
+        description: "Download reports",
+        icon: Download,
+        color: "bg-purple-500",
+        onClick: async () => {
+          try {
+            setIsRefreshing(true);
+            const response = await api.get("/api/get-all-contact/");
+            const exportContacts = response.data.data || [];
+
+            if (exportContacts.length === 0) {
+              showAlert("warning", "No contacts to export");
+              setIsRefreshing(false);
+              return;
+            }
+
+            // Helper function to safely format dates
+            const formatDate = (dateValue) => {
+              if (!dateValue) return "";
+              try {
+                const date =
+                  typeof dateValue === "string"
+                    ? parseISO(dateValue)
+                    : dateValue;
+                return format(date, "yyyy-MM-dd");
+              } catch (error) {
+                return "";
+              }
+            };
+
+            const headers = [
+              "name",
+              "phone_number",
+              "email_address",
+              "dob",
+              "gender",
+              "nationality",
+              "marital_status",
+              "category",
+              "secondary_email",
+              "secondary_phone_number",
+              "emergency_contact_name",
+              "emergency_contact_relationship",
+              "emergency_contact_phone_number",
+              "skills",
+              "linkedin_url",
+              "street",
+              "city",
+              "state",
+              "country",
+              "zipcode",
+              "pg_course_name",
+              "pg_college_name",
+              "pg_university_type",
+              "pg_start_date",
+              "pg_end_date",
+              "ug_course_name",
+              "ug_college_name",
+              "ug_university_type",
+              "ug_start_date",
+              "ug_end_date",
+              "job_title",
+              "company_name",
+              "department_type",
+              "from_date",
+              "to_date",
+              "event_name",
+              "event_role",
+              "event_held_organization",
+              "event_location",
+              "event_date",
+            ];
+
+            const csvRows = [];
+            csvRows.push(headers.join(","));
+
+            exportContacts.forEach((contact) => {
+              // Get events array (could be contact.events or contact.event)
+              const events = contact.events || contact.event || [];
+
+              // If contact has events, create one row per event
+              if (events.length > 0) {
+                events.forEach((event) => {
+                  const row = [
+                    contact.name || "",
+                    contact.phone_number || "",
+                    contact.email_address || "",
+                    formatDate(contact.dob),
+                    contact.gender || "",
+                    contact.nationality || "",
+                    contact.marital_status || "",
+                    contact.category || "",
+                    contact.secondary_email || "",
+                    contact.secondary_phone_number || "",
+                    contact.emergency_contact_name || "",
+                    contact.emergency_contact_relationship || "",
+                    contact.emergency_contact_phone_number || "",
+                    contact.skills || "",
+                    contact.linkedin_url || "",
+                    contact.street || "",
+                    contact.city || "",
+                    contact.state || "",
+                    contact.country || "",
+                    contact.zipcode || "",
+                    contact.pg_course_name || "",
+                    contact.pg_college_name || contact.pg_college || "",
+                    contact.pg_university_type || contact.pg_university || "",
+                    formatDate(contact.pg_start_date || contact.pg_from_date),
+                    formatDate(contact.pg_end_date || contact.pg_to_date),
+                    contact.ug_course_name || "",
+                    contact.ug_college_name || contact.ug_college || "",
+                    contact.ug_university_type || contact.ug_university || "",
+                    formatDate(contact.ug_start_date || contact.ug_from_date),
+                    formatDate(contact.ug_end_date || contact.ug_to_date),
+                    contact.job_title || "",
+                    contact.company_name || contact.company || "",
+                    contact.department_type || contact.department || "",
+                    formatDate(contact.from_date),
+                    formatDate(contact.to_date),
+                    event.event_name || "",
+                    event.event_role || "",
+                    event.event_held_organization || "",
+                    event.event_location || "",
+                    formatDate(event.event_date),
+                  ];
+
+                  csvRows.push(
+                    row
+                      .map((field) => `"${String(field).replace(/"/g, '""')}"`)
+                      .join(",")
+                  );
+                });
+              } else {
+                // Contact has no events - create one row with empty event fields
+                const row = [
+                  contact.name || "",
+                  contact.phone_number || "",
+                  contact.email_address || "",
+                  formatDate(contact.dob),
+                  contact.gender || "",
+                  contact.nationality || "",
+                  contact.marital_status || "",
+                  contact.category || "",
+                  contact.secondary_email || "",
+                  contact.secondary_phone_number || "",
+                  contact.emergency_contact_name || "",
+                  contact.emergency_contact_relationship || "",
+                  contact.emergency_contact_phone_number || "",
+                  contact.skills || "",
+                  contact.linkedin_url || "",
+                  contact.street || "",
+                  contact.city || "",
+                  contact.state || "",
+                  contact.country || "",
+                  contact.zipcode || "",
+                  contact.pg_course_name || "",
+                  contact.pg_college_name || contact.pg_college || "",
+                  contact.pg_university_type || contact.pg_university || "",
+                  formatDate(contact.pg_start_date || contact.pg_from_date),
+                  formatDate(contact.pg_end_date || contact.pg_to_date),
+                  contact.ug_course_name || "",
+                  contact.ug_college_name || contact.ug_college || "",
+                  contact.ug_university_type || contact.ug_university || "",
+                  formatDate(contact.ug_start_date || contact.ug_from_date),
+                  formatDate(contact.ug_end_date || contact.ug_to_date),
+                  contact.job_title || "",
+                  contact.company_name || contact.company || "",
+                  contact.department_type || contact.department || "",
+                  formatDate(contact.from_date),
+                  formatDate(contact.to_date),
+                  "", // event_name
+                  "", // event_role
+                  "", // event_held_organization
+                  "", // event_location
+                  "", // event_date
+                ];
+
+                csvRows.push(
+                  row
+                    .map((field) => `"${String(field).replace(/"/g, '""')}"`)
+                    .join(",")
+                );
+              }
+            });
+
+            const csvContent = csvRows.join("\n");
+
+            // Create and download file
+            const blob = new Blob([csvContent], {
+              type: "text/csv;charset=utf-8;",
+            });
+            const fileName = `contacts-export-${format(
+              new Date(),
+              "yyyy-MM-dd-HHmmss"
+            )}.csv`;
+            saveAs(blob, fileName);
+
+            showAlert("success", `Exported ${exportContacts.length} contacts`);
+          } catch (error) {
+            console.error("Export error:", error);
+            showAlert("error", "Failed to export contacts");
+          } finally {
+            setIsRefreshing(false);
+          }
+        },
+      },
+    ],
+    [navigate, id, role, downloadCSVTemplate, showAlert]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -574,7 +855,9 @@ function Admin() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  Admin Dashboard
+                </h1>
                 {isRefreshing && (
                   <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
                 )}
@@ -589,8 +872,10 @@ function Admin() {
               disabled={isRefreshing}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+              <RefreshCw
+                className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              <span>{isRefreshing ? "Refreshing..." : "Refresh Data"}</span>
             </button>
           </div>
 
@@ -616,7 +901,14 @@ function Admin() {
                   value={stats.verifiedContacts.toLocaleString()}
                   icon={UserCheck}
                   color="bg-gradient-to-r from-green-500 to-green-600"
-                  subtext={<><span className="text-green-600 font-semibold">{stats.verifiedContactsTrend}%</span> of total</>}
+                  subtext={
+                    <>
+                      <span className="text-green-600 font-semibold">
+                        {stats.verifiedContactsTrend}%
+                      </span>{" "}
+                      of total
+                    </>
+                  }
                 />
                 <StatCard
                   title="Data Quality Score"
@@ -630,7 +922,14 @@ function Admin() {
                   value={stats.completeProfiles.toLocaleString()}
                   icon={CheckCircle}
                   color="bg-gradient-to-r from-green-600 to-emerald-600"
-                  subtext={<><span className="text-green-600 font-semibold">{stats.completeProfilesTrend}%</span> completion</>}
+                  subtext={
+                    <>
+                      <span className="text-green-600 font-semibold">
+                        {stats.completeProfilesTrend}%
+                      </span>{" "}
+                      completion
+                    </>
+                  }
                 />
                 <StatCard
                   title="Total Events"
@@ -659,7 +958,9 @@ function Admin() {
                 <>
                   <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 mb-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        Quick Actions
+                      </h2>
                       <Sparkles className="w-5 h-5 text-yellow-500" />
                     </div>
                     <div className="space-y-3">
@@ -699,7 +1000,9 @@ function Admin() {
               <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-blue-600" />
-                  <h2 className="text-lg font-semibold text-gray-900">Contact Activity Over Time</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Contact Activity Over Time
+                  </h2>
                 </div>
                 {!chartsDataReady ? (
                   <ChartSkeleton />
@@ -725,7 +1028,9 @@ function Admin() {
               {!dataLoaded ? (
                 <ChartSkeleton title="Skills Distribution" />
               ) : (
-                <Suspense fallback={<ChartSkeleton title="Skills Distribution" />}>
+                <Suspense
+                  fallback={<ChartSkeleton title="Skills Distribution" />}
+                >
                   <SkillsHorizontalBarChart contacts={sampledContacts} />
                 </Suspense>
               )}
@@ -746,7 +1051,9 @@ function Admin() {
               {!dataLoaded ? (
                 <ChartSkeleton title="User Segmentation" />
               ) : (
-                <Suspense fallback={<ChartSkeleton title="User Segmentation" />}>
+                <Suspense
+                  fallback={<ChartSkeleton title="User Segmentation" />}
+                >
                   <UserActivitySegmentation contacts={sampledContacts} />
                 </Suspense>
               )}
