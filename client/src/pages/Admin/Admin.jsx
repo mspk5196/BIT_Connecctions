@@ -281,6 +281,13 @@ function Admin() {
     message: "",
   });
 
+  const [importProgress, setImportProgress] = useState({
+    show: false,
+    status: "",
+    processed: 0,
+    total: 0,
+  });
+
   const showAlert = useCallback((severity, message) => {
     setAlert({ isOpen: true, severity, message });
   }, []);
@@ -536,12 +543,23 @@ function Admin() {
         return;
       }
 
-      showAlert("info", "Processing CSV file...");
+      // Show progress modal
+      setImportProgress({
+        show: true,
+        status: "Uploading CSV file...",
+        processed: 0,
+        total: 0,
+      });
 
       try {
         const formData = new FormData();
         formData.append("csv_file", file);
         formData.append("created_by", id);
+
+        setImportProgress((prev) => ({
+          ...prev,
+          status: "Processing contacts...",
+        }));
 
         const response = await api.post("/api/import-csv", formData, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -550,16 +568,40 @@ function Admin() {
         if (response.data.success) {
           const { totalRows, updatedCount, insertedCount, errorCount } =
             response.data.data;
-          showAlert(
-            "success",
-            `CSV Import Complete!\n📊 Total: ${totalRows}\n✅ Added: ${insertedCount}\n⚠️ Updated: ${updatedCount}\n❌ Errors: ${errorCount}`
-          );
-          fetchDashboardData(true);
+
+          setImportProgress((prev) => ({
+            ...prev,
+            status: "Completed!",
+            processed: totalRows,
+            total: totalRows,
+          }));
+
+          // Close modal after short delay
+          setTimeout(() => {
+            setImportProgress({
+              show: false,
+              status: "",
+              processed: 0,
+              total: 0,
+            });
+            showAlert(
+              "success",
+              `CSV Import Complete!\n📊 Total: ${totalRows}\n✅ Added: ${insertedCount}\n⚠️ Updated: ${updatedCount}\n❌ Errors: ${errorCount}`
+            );
+            fetchDashboardData(true);
+          }, 1000);
         } else {
+          setImportProgress({
+            show: false,
+            status: "",
+            processed: 0,
+            total: 0,
+          });
           showAlert("error", `Import failed: ${response.data.message}`);
         }
       } catch (error) {
         console.error("CSV import error:", error);
+        setImportProgress({ show: false, status: "", processed: 0, total: 0 });
         showAlert(
           "error",
           `CSV Import Error: ${error.response?.data?.message || error.message}`
@@ -834,6 +876,41 @@ function Admin() {
         onChange={handleCSVUpload}
         style={{ display: "none" }}
       />
+
+      {/* Import Progress Notification */}
+      {importProgress.show && (
+        <div className="fixed top-20 right-6 z-50 animate-slide-in">
+          <div className="bg-white rounded-lg shadow-xl border border-gray-200 p-5 max-w-sm w-80">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <RefreshCw className="w-6 h-6 text-blue-600 animate-spin" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                  Importing CSV Data
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  {importProgress.status}
+                </p>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300 animate-pulse"
+                    style={{ width: "100%" }}
+                  ></div>
+                </div>
+
+                {importProgress.total > 0 && (
+                  <p className="text-xs text-gray-500">
+                    {importProgress.processed} / {importProgress.total} rows
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Alert
         isOpen={alert.isOpen}
