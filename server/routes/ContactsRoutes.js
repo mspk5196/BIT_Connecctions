@@ -54,7 +54,7 @@ import {
   completeRegistration,
   invalidateInvitation,
   invitationHeartbeat,
-} from "../controllers/referralControllers.js";
+} from "../controllers/ReferralControllers.js";
 const router = express.Router();
 import { analyzeContactNetwork } from "../controllers/NetworkControllers.js";
 import {
@@ -250,7 +250,12 @@ router.put(
   CompleteTask
 );
 router.post("/create-task", verifyToken, authorizeRoles("admin"), CreateTask);
-router.delete("/delete-task/:id", verifyToken, authorizeRoles("admin"), DeleteTask);
+router.delete(
+  "/delete-task/:id",
+  verifyToken,
+  authorizeRoles("admin"),
+  DeleteTask
+);
 
 // History routes - Admin and middleman access
 router.get(
