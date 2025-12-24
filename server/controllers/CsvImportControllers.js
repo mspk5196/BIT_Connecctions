@@ -115,7 +115,7 @@ export const ImportContactsFromCSV = async (req, res) => {
       h.replace(/^"|"$/g, "")
     );
 
-    console.log("Parsed headers:", headers);
+    // console.log("Parsed headers:", headers);
 
     // Parse data rows
     for (let i = 1; i < lines.length; i++) {
@@ -144,9 +144,9 @@ export const ImportContactsFromCSV = async (req, res) => {
       fileRows.push(row);
     }
 
-    console.log(`✅ Successfully parsed ${fileRows.length} rows`);
-    console.log("📋 First row sample:", fileRows[0]);
-    console.log("📋 Headers found:", headers);
+    // console.log(`✅ Successfully parsed ${fileRows.length} rows`);
+    // console.log("📋 First row sample:", fileRows[0]);
+    // console.log("📋 Headers found:", headers);
 
     // Clean up uploaded file
     fs.unlinkSync(filePath);
@@ -180,7 +180,7 @@ export const ImportContactsFromCSV = async (req, res) => {
         let insertedCount = 0;
         let eventsCreated = 0;
         let eventsUpdated = 0;
-
+        console.log(fileRows);
         for (let i = 0; i < fileRows.length; i++) {
           const row = fileRows[i];
           const rowNumber = i + 2; // +2 because arrays start at 0 and CSV header is row 1
@@ -267,7 +267,9 @@ export const ImportContactsFromCSV = async (req, res) => {
                 existingContact = existingContactResult[0];
                 contactId = existingContact.contact_id;
 
-                console.log(`🔍 Found existing contact ${contactId} for email ${row.email_address}`);
+                console.log(
+                  `🔍 Found existing contact ${contactId} for email ${row.email_address}`
+                );
 
                 // 🔍 STEP 2: Check if the specific event exists for this contact
                 if (row.event_name && row.event_name.trim() !== "") {
@@ -280,9 +282,13 @@ export const ImportContactsFromCSV = async (req, res) => {
 
                   if (existingEventResult.length > 0) {
                     existingEventForContact = existingEventResult[0];
-                    console.log(`🔍 Found existing event "${row.event_name}" for contact ${contactId}`);
+                    console.log(
+                      `🔍 Found existing event "${row.event_name}" for contact ${contactId}`
+                    );
                   } else {
-                    console.log(`ℹ️ Event "${row.event_name}" does not exist for contact ${contactId}, will create new event`);
+                    console.log(
+                      `ℹ️ Event "${row.event_name}" does not exist for contact ${contactId}, will create new event`
+                    );
                   }
                 }
 
@@ -297,10 +303,18 @@ export const ImportContactsFromCSV = async (req, res) => {
                     marital_status = ${row.marital_status || null},
                     category = ${row.category?.toUpperCase() || null},
                     secondary_email = ${row.secondary_email || null},
-                    secondary_phone_number = ${row.secondary_phone_number || null},
-                    emergency_contact_name = ${row.emergency_contact_name || null},
-                    emergency_contact_relationship = ${row.emergency_contact_relationship || null},
-                    emergency_contact_phone_number = ${row.emergency_contact_phone_number || null},
+                    secondary_phone_number = ${
+                      row.secondary_phone_number || null
+                    },
+                    emergency_contact_name = ${
+                      row.emergency_contact_name || null
+                    },
+                    emergency_contact_relationship = ${
+                      row.emergency_contact_relationship || null
+                    },
+                    emergency_contact_phone_number = ${
+                      row.emergency_contact_phone_number || null
+                    },
                     skills = ${row.skills || null},
                     linkedin_url = ${row.linkedin_url || null},
                     updated_at = NOW()
@@ -308,10 +322,11 @@ export const ImportContactsFromCSV = async (req, res) => {
                   RETURNING contact_id, name
                 `;
 
-                console.log(`✅ Updated existing contact ${contactId}: ${row.name}`);
+                console.log(
+                  `✅ Updated existing contact ${contactId}: ${row.name}`
+                );
                 updatedCount++;
                 wasContactInserted = false;
-
               } else {
                 // ✅ INSERT NEW CONTACT
                 const [newContact] = await t`
@@ -322,33 +337,57 @@ export const ImportContactsFromCSV = async (req, res) => {
                     emergency_contact_name, emergency_contact_relationship, emergency_contact_phone_number,
                     skills, linkedin_url, created_at, updated_at
                   ) VALUES (
-                    ${created_by || null}, ${row.name}, ${row.phone_number}, ${row.email_address},
-                    ${row.dob || null}, ${row.gender || null}, ${row.nationality || null}, 
-                    ${row.marital_status || null}, ${row.category?.toUpperCase() || null},
-                    ${row.secondary_email || null}, ${row.secondary_phone_number || null},
-                    ${row.emergency_contact_name || null}, ${row.emergency_contact_relationship || null}, 
+                    ${created_by || null}, ${row.name}, ${row.phone_number}, ${
+                  row.email_address
+                },
+                    ${row.dob || null}, ${row.gender || null}, ${
+                  row.nationality || null
+                }, 
+                    ${row.marital_status || null}, ${
+                  row.category?.toUpperCase() || null
+                },
+                    ${row.secondary_email || null}, ${
+                  row.secondary_phone_number || null
+                },
+                    ${row.emergency_contact_name || null}, ${
+                  row.emergency_contact_relationship || null
+                }, 
                     ${row.emergency_contact_phone_number || null},
-                    ${row.skills || null}, ${row.linkedin_url || null}, NOW(), NOW()
+                    ${row.skills || null}, ${
+                  row.linkedin_url || null
+                }, NOW(), NOW()
                   ) 
                   RETURNING contact_id, name
                 `;
 
                 contactId = newContact.contact_id;
-                console.log(`✅ Inserted new contact ${contactId}: ${row.name}`);
+                console.log(
+                  `✅ Inserted new contact ${contactId}: ${row.name}`
+                );
                 insertedCount++;
                 wasContactInserted = true;
               }
-
             } catch (contactError) {
-              console.error(`❌ Error in contact upsert for row ${rowNumber}:`, contactError);
+              console.error(
+                `❌ Error in contact upsert for row ${rowNumber}:`,
+                contactError
+              );
               throw contactError;
             }
 
             // ✅ ADD CONTACT MODIFICATION LOGGING
             try {
               const actionType = wasContactInserted ? "CREATE" : "UPDATE";
-              await logContactModification(db, contactId, created_by, actionType, t);
-              console.log(`✅ Contact modification logged for contact ${contactId} (${actionType})`);
+              await logContactModification(
+                db,
+                contactId,
+                created_by,
+                actionType,
+                t
+              );
+              console.log(
+                `✅ Contact modification logged for contact ${contactId} (${actionType})`
+              );
             } catch (err) {
               console.warn(
                 "Contact modification logging failed, but continuing operation:",
@@ -360,7 +399,13 @@ export const ImportContactsFromCSV = async (req, res) => {
             const parallelOperations = [];
 
             // ✅ HANDLE ADDRESS DATA WITH MANUAL UPSERT
-            if (row.street || row.city || row.state || row.country || row.zipcode) {
+            if (
+              row.street ||
+              row.city ||
+              row.state ||
+              row.country ||
+              row.zipcode
+            ) {
               parallelOperations.push(
                 (async () => {
                   try {
@@ -380,22 +425,33 @@ export const ImportContactsFromCSV = async (req, res) => {
                           zipcode = ${row.zipcode || null}
                         WHERE contact_id = ${contactId}
                       `;
-                      console.log(`✅ Updated address for contact ${contactId}`);
+                      console.log(
+                        `✅ Updated address for contact ${contactId}`
+                      );
                     } else {
                       await t`
                         INSERT INTO contact_address (
                           contact_id, street, city, state, country, zipcode, created_at
                         ) VALUES (
-                          ${contactId}, ${row.street || null}, ${row.city || null}, 
-                          ${row.state || null}, ${row.country || null}, ${row.zipcode || null}, 
+                          ${contactId}, ${row.street || null}, ${
+                        row.city || null
+                      }, 
+                          ${row.state || null}, ${row.country || null}, ${
+                        row.zipcode || null
+                      }, 
                           NOW()
                         )
                       `;
-                      console.log(`✅ Inserted address for contact ${contactId}`);
+                      console.log(
+                        `✅ Inserted address for contact ${contactId}`
+                      );
                     }
-                    return { type: 'address', contactId };
+                    return { type: "address", contactId };
                   } catch (error) {
-                    console.error(`❌ Address operation failed for contact ${contactId}:`, error);
+                    console.error(
+                      `❌ Address operation failed for contact ${contactId}:`,
+                      error
+                    );
                     throw error;
                   }
                 })()
@@ -403,7 +459,12 @@ export const ImportContactsFromCSV = async (req, res) => {
             }
 
             // ✅ HANDLE EDUCATION DATA WITH MANUAL UPSERT
-            if (row.pg_course_name || row.pg_college_name || row.ug_course_name || row.ug_college_name) {
+            if (
+              row.pg_course_name ||
+              row.pg_college_name ||
+              row.ug_course_name ||
+              row.ug_college_name
+            ) {
               parallelOperations.push(
                 (async () => {
                   try {
@@ -428,7 +489,9 @@ export const ImportContactsFromCSV = async (req, res) => {
                           ug_to_date = ${row.ug_end_date || null}
                         WHERE contact_id = ${contactId}
                       `;
-                      console.log(`✅ Updated education for contact ${contactId}`);
+                      console.log(
+                        `✅ Updated education for contact ${contactId}`
+                      );
                     } else {
                       await t`
                         INSERT INTO contact_education (
@@ -436,18 +499,33 @@ export const ImportContactsFromCSV = async (req, res) => {
                           pg_from_date, pg_to_date, ug_course_name, ug_college, 
                           ug_university, ug_from_date, ug_to_date
                         ) VALUES (
-                          ${contactId}, ${row.pg_course_name || null}, ${row.pg_college_name || null}, 
-                          ${row.pg_university_type || null}, ${row.pg_start_date || null}, 
-                          ${row.pg_end_date || null}, ${row.ug_course_name || null}, 
-                          ${row.ug_college_name || null}, ${row.ug_university_type || null}, 
-                          ${row.ug_start_date || null}, ${row.ug_end_date || null}
+                          ${contactId}, ${row.pg_course_name || null}, ${
+                        row.pg_college_name || null
+                      }, 
+                          ${row.pg_university_type || null}, ${
+                        row.pg_start_date || null
+                      }, 
+                          ${row.pg_end_date || null}, ${
+                        row.ug_course_name || null
+                      }, 
+                          ${row.ug_college_name || null}, ${
+                        row.ug_university_type || null
+                      }, 
+                          ${row.ug_start_date || null}, ${
+                        row.ug_end_date || null
+                      }
                         )
                       `;
-                      console.log(`✅ Inserted education for contact ${contactId}`);
+                      console.log(
+                        `✅ Inserted education for contact ${contactId}`
+                      );
                     }
-                    return { type: 'education', contactId };
+                    return { type: "education", contactId };
                   } catch (error) {
-                    console.error(`❌ Education operation failed for contact ${contactId}:`, error);
+                    console.error(
+                      `❌ Education operation failed for contact ${contactId}:`,
+                      error
+                    );
                     throw error;
                   }
                 })()
@@ -475,23 +553,34 @@ export const ImportContactsFromCSV = async (req, res) => {
                           to_date = ${row.to_date || null}
                         WHERE contact_id = ${contactId}
                       `;
-                      console.log(`✅ Updated experience for contact ${contactId}`);
+                      console.log(
+                        `✅ Updated experience for contact ${contactId}`
+                      );
                     } else {
                       await t`
                         INSERT INTO contact_experience (
                           contact_id, job_title, company, department, 
                           from_date, to_date, created_at
                         ) VALUES (
-                          ${contactId}, ${row.job_title || null}, ${row.company_name || null}, 
-                          ${row.department_type || null}, ${row.from_date || null}, 
+                          ${contactId}, ${row.job_title || null}, ${
+                        row.company_name || null
+                      }, 
+                          ${row.department_type || null}, ${
+                        row.from_date || null
+                      }, 
                           ${row.to_date || null}, NOW()
                         )
                       `;
-                      console.log(`✅ Inserted experience for contact ${contactId}`);
+                      console.log(
+                        `✅ Inserted experience for contact ${contactId}`
+                      );
                     }
-                    return { type: 'experience', contactId };
+                    return { type: "experience", contactId };
                   } catch (error) {
-                    console.error(`❌ Experience operation failed for contact ${contactId}:`, error);
+                    console.error(
+                      `❌ Experience operation failed for contact ${contactId}:`,
+                      error
+                    );
                     throw error;
                   }
                 })()
@@ -510,18 +599,21 @@ export const ImportContactsFromCSV = async (req, res) => {
                       const [updatedEvent] = await t`
                         UPDATE event SET
                           event_role = ${row.event_role || null},
-                          event_held_organization = ${row.event_held_organization || null},
+                          event_held_organization = ${
+                            row.event_held_organization || null
+                          },
                           event_location = ${row.event_location || null},
                           event_date = ${row.event_date || null},
                           updated_at = NOW()
                         WHERE contact_id = ${contactId} AND event_name = ${row.event_name.trim()}
                         RETURNING event_id, event_name
                       `;
-                      
-                      console.log(`✅ Updated existing event "${row.event_name}" for contact ${contactId}`);
+
+                      console.log(
+                        `✅ Updated existing event "${row.event_name}" for contact ${contactId}`
+                      );
                       eventWasUpdated = true;
                       eventsUpdated++;
-
                     } else {
                       // ✅ CREATE NEW EVENT (either new contact OR existing contact with new event)
                       const [newEvent] = await t`
@@ -529,26 +621,37 @@ export const ImportContactsFromCSV = async (req, res) => {
                           contact_id, event_name, event_role, event_held_organization, 
                           event_location, event_date, verified, contact_status, created_at, updated_at, created_by
                         ) VALUES (
-                          ${contactId}, ${row.event_name.trim()}, ${row.event_role || null}, 
-                          ${row.event_held_organization || null}, ${row.event_location || null}, 
-                          ${row.event_date || null}, ${true}, ${"approved"}, NOW(), NOW(), ${created_by}
+                          ${contactId}, ${row.event_name.trim()}, ${
+                        row.event_role || null
+                      }, 
+                          ${row.event_held_organization || null}, ${
+                        row.event_location || null
+                      }, 
+                          ${
+                            row.event_date || null
+                          }, ${true}, ${"approved"}, NOW(), NOW(), ${created_by}
                         )
                         RETURNING event_id, event_name
                       `;
-                      
-                      console.log(`✅ Created new event "${row.event_name}" for contact ${contactId}`);
+
+                      console.log(
+                        `✅ Created new event "${row.event_name}" for contact ${contactId}`
+                      );
                       eventWasUpdated = false;
                       eventsCreated++;
                     }
 
-                    return { 
-                      type: 'event', 
-                      contactId, 
+                    return {
+                      type: "event",
+                      contactId,
                       eventName: row.event_name,
-                      operation: eventWasUpdated ? 'updated' : 'created'
+                      operation: eventWasUpdated ? "updated" : "created",
                     };
                   } catch (error) {
-                    console.error(`❌ Event operation failed for contact ${contactId}:`, error);
+                    console.error(
+                      `❌ Event operation failed for contact ${contactId}:`,
+                      error
+                    );
                     throw error;
                   }
                 })()
@@ -558,30 +661,45 @@ export const ImportContactsFromCSV = async (req, res) => {
             // ✅ EXECUTE ALL PARALLEL OPERATIONS
             if (parallelOperations.length > 0) {
               try {
-                console.log(`🚀 Starting ${parallelOperations.length} parallel operations for contact ${contactId}`);
+                console.log(
+                  `🚀 Starting ${parallelOperations.length} parallel operations for contact ${contactId}`
+                );
                 const parallelResults = await Promise.all(parallelOperations);
-                console.log(`✅ All ${parallelResults.length} parallel operations completed for contact ${contactId}`);
-                
+                console.log(
+                  `✅ All ${parallelResults.length} parallel operations completed for contact ${contactId}`
+                );
+
                 // Log each completed operation with details
                 parallelResults.forEach((result) => {
-                  if (result.type === 'event') {
-                    console.log(`   ✓ ${result.type} operation: ${result.operation} event "${result.eventName}" for contact ${result.contactId}`);
+                  if (result.type === "event") {
+                    console.log(
+                      `   ✓ ${result.type} operation: ${result.operation} event "${result.eventName}" for contact ${result.contactId}`
+                    );
                   } else {
-                    console.log(`   ✓ ${result.type} operation completed for contact ${result.contactId}`);
+                    console.log(
+                      `   ✓ ${result.type} operation completed for contact ${result.contactId}`
+                    );
                   }
                 });
               } catch (parallelError) {
-                console.error(`❌ Error in parallel operations for contact ${contactId}:`, parallelError);
+                console.error(
+                  `❌ Error in parallel operations for contact ${contactId}:`,
+                  parallelError
+                );
                 throw parallelError;
               }
             } else {
-              console.log(`ℹ️ No additional data to process for contact ${contactId}`);
+              console.log(
+                `ℹ️ No additional data to process for contact ${contactId}`
+              );
             }
 
             // ✅ ADD TO PROCESSED CONTACTS WITH EVENT INFO
-            const eventInfo = row.event_name ? 
-              (existingEventForContact ? 'event updated' : 'event created') : 
-              'no event data';
+            const eventInfo = row.event_name
+              ? existingEventForContact
+                ? "event updated"
+                : "event created"
+              : "no event data";
 
             processedContacts.push({
               row: rowNumber,
@@ -589,11 +707,10 @@ export const ImportContactsFromCSV = async (req, res) => {
               name: row.name,
               email: row.email_address,
               event_name: row.event_name || null,
-              contact_operation: wasContactInserted ? 'inserted' : 'updated',
-              event_operation: eventInfo
+              contact_operation: wasContactInserted ? "inserted" : "updated",
+              event_operation: eventInfo,
             });
             successCount++;
-
           } catch (error) {
             console.error(`❌ Error processing row ${rowNumber}:`, error);
             errors.push({
@@ -622,26 +739,25 @@ export const ImportContactsFromCSV = async (req, res) => {
         - ${result.successCount} total success 
         - Contacts: ${result.insertedCount} inserted, ${result.updatedCount} updated
         - Events: ${result.eventsCreated} created, ${result.eventsUpdated} updated
-        - ${result.errorCount} errors`
-      );
+        - ${result.errorCount} errors`);
 
       return res.status(200).json({
-        message: "CSV import completed successfully with enhanced event validation",
+        message:
+          "CSV import completed successfully with enhanced event validation",
         success: true,
         data: result,
         summary: {
           contacts: {
             inserted: result.insertedCount,
-            updated: result.updatedCount
+            updated: result.updatedCount,
           },
           events: {
             created: result.eventsCreated,
-            updated: result.eventsUpdated
+            updated: result.eventsUpdated,
           },
-          errors: result.errorCount
-        }
+          errors: result.errorCount,
+        },
       });
-
     } catch (error) {
       console.error("❌ Database transaction error:", error);
       return res.status(500).json({
@@ -650,7 +766,6 @@ export const ImportContactsFromCSV = async (req, res) => {
         error: error.message,
       });
     }
-
   } catch (error) {
     console.error("❌ CSV import error:", error);
 
@@ -714,22 +829,24 @@ export const checkEventConflicts = async (t, contactId, eventName) => {
     `;
 
     const conflictingEvent = existingEvents.find(
-      event => event.event_name.toLowerCase() === eventName.toLowerCase()
+      (event) => event.event_name.toLowerCase() === eventName.toLowerCase()
     );
 
     return {
       hasConflict: !!conflictingEvent,
       conflictingEvent: conflictingEvent,
-      allEvents: existingEvents
+      allEvents: existingEvents,
     };
   } catch (error) {
     console.error("Error checking event conflicts:", error);
     return {
       hasConflict: false,
       conflictingEvent: null,
-      allEvents: []
+      allEvents: [],
     };
   }
 };
 
-console.log("🚀 CSV Import controller loaded with enhanced event validation (contact-event relationship properly handled)");
+console.log(
+  "🚀 CSV Import controller loaded with enhanced event validation (contact-event relationship properly handled)"
+);

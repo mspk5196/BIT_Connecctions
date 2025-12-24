@@ -30,29 +30,36 @@ dotenv.config();
 //     allowedHeaders: ["Content-Type", "Authorization"],
 //   })
 // );
-
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:5175",
-  "http://10.208.71.214:5173",
-  "https://unpayable-nonradically-felisha.ngrok-free.dev",
-];
-
 app.use(
   cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+// const allowedOrigins = [
+//   "http://localhost:5173",
+//   "http://localhost:5174",
+//   "http://localhost:5175",
+//   "http://10.208.71.214:5173",
+//   "https://unpayable-nonradically-felisha.ngrok-free.dev",
+// ];
+
+// app.use(
+//   cors({
+//     origin(origin, callback) {
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
 
 // no app.options(...) at all
 app.use(bodyParser.json());
