@@ -434,7 +434,7 @@ function MiddleManRecords() {
                         {/* Image with overlay buttons - always visible on mobile, hover on desktop */}
                         <div className="relative">
                           <img
-                            src={`http://localhost:8000/${card.file_path.replace(
+                            src={`${import.meta.env.VITE_BASE_URL}/${card.file_path.replace(
                               /\\/g,
                               "/"
                             )}`}

@@ -318,7 +318,7 @@ const VisitingCardDetails = () => {
 
     try {
       // Create a blob from the image URL to send to Flask OCR API
-      const imageUrl = `http://localhost:8000/${currentCard.file_path.replace(
+      const imageUrl = `${import.meta.env.VITE_BASE_URL}/${currentCard.file_path.replace(
         /\\/g,
         "/"
       )}`;
@@ -336,7 +336,7 @@ const VisitingCardDetails = () => {
       formData.append("file", imageBlob, "visiting-card.jpg");
 
       // Call Flask OCR API directly
-      const ocrResponse = await fetch("http://localhost:5001/extract-card", {
+      const ocrResponse = await fetch(`${import.meta.env.VITE_AI_BASE_URL}/extract-card`, {
         method: "POST",
         body: formData,
       });
