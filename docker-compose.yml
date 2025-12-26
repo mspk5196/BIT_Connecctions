@@ -38,7 +38,7 @@ services:
     networks:
       - bitconnections-network
 
-  # MySQL Database Service (Optional - if you're using MySQL)
+  # Postgres Database Service (Optional - if you're using Postgres)
   postgres:
     image: postgres:15
     container_name: bitconnections-postgres
