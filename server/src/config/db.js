@@ -1,11 +1,17 @@
-import postgres from 'postgres';
 import dotenv from 'dotenv';
 
 dotenv.config();
+const { Pool } = require("pg");
 
-const db = postgres(process.env.DATABASE_URL, {
-  ssl: 'require', // Force SSL for Supabase
-  connection: { options: '-c statement_timeout=30000' } // optional: avoid long locks
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: Number(process.env.DB_PORT),
 });
 
-export default db;
+pool.query("SELECT NOW()", (err, res) => {
+  console.log(res.rows);
+  pool.end();
+});

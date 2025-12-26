@@ -38,6 +38,24 @@ services:
     networks:
       - bitconnections-network
 
+  # OCR Flask Service
+  ocr_service:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: bitconnections-ocr
+    ports:
+      - "6001:6001"
+    env_file:
+      - /envs/bit-connections-ai.env
+    volumes:
+      - ./python/uploads:/app/uploads
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - bitconnections-network
+
   # Postgres Database Service (Optional - if you're using Postgres)
   postgres:
     image: postgres:15

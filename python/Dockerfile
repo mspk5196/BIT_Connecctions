@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies required by PaddleOCR
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+	   build-essential \
+	   libgl1 \
+	   libglib2.0-0 \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Copy requirement file and install Python dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Ensure uploads directory exists inside container
+RUN mkdir -p uploads
+
+# Environment
+ENV PYTHONUNBUFFERED=1 \
+	PORT=6001
+
+# Expose Flask port
+EXPOSE 6001
+
+# Run the Flask server
+CMD ["python", "flask_server.py"]
