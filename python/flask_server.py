@@ -232,4 +232,4 @@ def extract_card():
 if __name__ == '__main__':
     print("Starting OCR Flask Server...")
     print("Make sure to set your API_KEY environment variable for Gemini AI")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=int(os.getenv("PORT")), debug=True)
