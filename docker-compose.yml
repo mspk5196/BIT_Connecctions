@@ -34,7 +34,7 @@ services:
     volumes:
       - ./backend/uploads:/app/uploads
     depends_on:
-      - mysql
+      - postgres
     restart: unless-stopped
     networks:
       - bitconnections-network
