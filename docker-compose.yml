@@ -36,7 +36,7 @@ services:
       - mysql
     restart: unless-stopped
     networks:
-      - bitmeetings-network
+      - bitconnections-network
 
   # MySQL Database Service (Optional - if you're using MySQL)
   postgres:
