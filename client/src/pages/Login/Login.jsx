@@ -33,7 +33,7 @@ const LoginPage = () => {
 
       if (res.data.success) {
         const { user } = res.data;
-        console.log("Login successful:", user);
+        // console.log("Login successful:", user);
 
         // Update Zustand with user info (cookie is automatically set by server)
         setAuth(user);

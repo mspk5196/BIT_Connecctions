@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_GOOGLE_CLIENT_ID: ${REACT_APP_GOOGLE_CLIENT_ID}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    container_name: bitconnections-frontend
+    ports:
+      - "8080:80"
+    env_file:
+      - /envs/bit-connections-frontend.env
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - bitconnections-network
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bitconnections-backend
+    ports:
+      - "6000:6000"
+    env_file:
+      - /envs/bit-connections-backend.env
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - mysql
+    restart: unless-stopped
+    networks:
+      - bitmeetings-network
+
+  # MySQL Database Service (Optional - if you're using MySQL)
+  postgres:
+    image: postgres:15
+    container_name: bitconnections-postgres
+    ports:
+      - "5432:5432"
+    env_file:
+      - /envs/bit-connections-postgres.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/database:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    networks:
+      - bitconnections-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  bitconnections-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

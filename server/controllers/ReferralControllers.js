@@ -1,7 +1,6 @@
 import db from "../src/config/db.js";
 import path from "path";
 import crypto from 'crypto';
-import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
