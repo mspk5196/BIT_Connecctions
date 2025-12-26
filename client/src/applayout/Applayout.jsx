@@ -137,7 +137,8 @@ function Applayout() {
           shouldShowNavbar ? "md:pt-0" : ""
         }`}
       >
-        <Routes basename="/bitconnections">
+        
+        <Routes>
           {/* Public Route */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<ReferralSignup />} />
