@@ -1,9 +1,9 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+import { Pool } from "pg";
 
 dotenv.config();
-const { Pool } = require("pg");
 
-const pool = new Pool({
+const db = new Pool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -11,7 +11,8 @@ const pool = new Pool({
   port: Number(process.env.DB_PORT),
 });
 
-pool.query("SELECT NOW()", (err, res) => {
-  console.log(res.rows);
-  pool.end();
+db.on("error", (err) => {
+  console.error("Unexpected PostgreSQL client error:", err.stack || err);
 });
+
+export default db;
