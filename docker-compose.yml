@@ -4,7 +4,7 @@ services:
   # Frontend Service
   frontend:
     build:
-      context: ./frontend
+      context: ./client
       dockerfile: Dockerfile
       args:
         VITE_BASE_URL: ${VITE_BASE_URL}
@@ -24,7 +24,7 @@ services:
   # Backend Service
   backend:
     build:
-      context: ./backend
+      context: ./server
       dockerfile: Dockerfile
     container_name: bitconnections-backend
     ports:
@@ -32,7 +32,7 @@ services:
     env_file:
       - /envs/bit-connections-backend.env
     volumes:
-      - ./backend/uploads:/app/uploads
+      - ./server/uploads:/app/uploads
     depends_on:
       - postgres
     restart: unless-stopped
@@ -67,7 +67,7 @@ services:
       - /envs/bit-connections-postgres.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/database:/docker-entrypoint-initdb.d
+      - ./server/database:/docker-entrypoint-initdb.d
     restart: unless-stopped
     networks:
       - bitconnections-network
