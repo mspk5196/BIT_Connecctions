@@ -2,9 +2,7 @@ import axios from "axios";
 import { useAuthStore } from "../store/AuthStore";
 
 const api = axios.create({
-
-//   baseURL: "http://10.208.71.214:8000/",
-baseURL: "https://elba-patulous-hypernormally.ngrok-free.dev",
+  baseURL: import.meta.env.VITE_BASE_URL,
   withCredentials: true, // Always send cookies with requests
 });
 
