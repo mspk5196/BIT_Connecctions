@@ -60,7 +60,7 @@ const MiddleManRoutesWrapper = ({ children }) => {
   const allowedRoles = ["cata", "catb", "catc"];
 
   if (!allowedRoles.includes(role)) {
-    return <Navigate to="/" />;
+    return <Navigate to="/bitconnections" />;
   }
   return children;
 };
@@ -199,7 +199,7 @@ function Applayout() {
           </Route>
 
           {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="*" element={<Navigate to="/bitconnections" />} />
         </Routes>
       </main>
     </div>
