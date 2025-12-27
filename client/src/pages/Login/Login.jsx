@@ -16,7 +16,7 @@ const LoginPage = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate("/bitconnections/");
     }
   }, [isAuthenticated, navigate]);
 
@@ -39,7 +39,7 @@ const LoginPage = () => {
         setAuth(user);
 
         // Navigate to home page
-        navigate("/");
+        navigate("/bitconnections/");
       }
     } catch (error) {
       console.error("Login failed:", error);
