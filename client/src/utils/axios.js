@@ -19,8 +19,8 @@ api.interceptors.response.use(
       clearAuth();
 
       // Only redirect if not already on login page
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+      if (window.location.pathname !== "/bitconnections/login") {
+        window.location.href = "/bitconnections/login";
       }
     } else if (error.response?.status === 403) {
       // 403 could be permission denied OR token invalid
@@ -31,8 +31,8 @@ api.interceptors.response.use(
         const { clearAuth } = useAuthStore.getState();
         clearAuth();
 
-        if (window.location.pathname !== "/login") {
-          window.location.href = "/login";
+        if (window.location.pathname !== "/bitconnections/login") {
+          window.location.href = "/bitconnections/login";
         }
       }
       // For non-auth endpoints, let the component handle the 403 error
