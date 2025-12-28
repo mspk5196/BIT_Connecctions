@@ -16,11 +16,10 @@ const LoginPage = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/bitconnections/");
+      navigate("/");
     }
   }, [isAuthenticated, navigate]);
 
-  
   const handleLogin = async () => {
     if (!email || !password) {
       alert("Please enter both email and password");
@@ -39,7 +38,7 @@ const LoginPage = () => {
         setAuth(user);
 
         // Navigate to home page
-        navigate("/bitconnections/");
+        navigate("/");
       }
     } catch (error) {
       console.error("Login failed:", error);
