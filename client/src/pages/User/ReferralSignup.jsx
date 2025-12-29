@@ -55,7 +55,7 @@ function ReferralSignup() {
     const handleBeforeUnload = () => {
       if (!hasRegistered.current && linkValid && !loading) {
         navigator.sendBeacon(
-          "http://localhost:8000/api/invalidate-invitation",
+          "/api/invalidate-invitation",
           JSON.stringify({ token: referralToken })
         );
       }
