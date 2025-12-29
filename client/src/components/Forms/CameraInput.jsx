@@ -71,7 +71,7 @@ function CameraInput() {
         constraints
       );
       setStream(mediaStream);
-
+            
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
 
