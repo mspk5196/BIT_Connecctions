@@ -12,7 +12,7 @@ services:
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
     container_name: bitconnections-frontend
     ports:
-      - "8081:80"
+      - "8082:80"
     env_file:
       - /envs/bit-connections-frontend.env
     depends_on:
@@ -28,7 +28,7 @@ services:
       dockerfile: Dockerfile
     container_name: bitconnections-backend
     ports:
-      - "6000:6000"
+      - "5002:5000"
     env_file:
       - /envs/bit-connections-backend.env
     volumes:
@@ -46,7 +46,7 @@ services:
       dockerfile: Dockerfile
     container_name: bitconnections-ocr
     ports:
-      - "6001:6001"
+      - "6001:6000"
     env_file:
       - /envs/bit-connections-ai.env
     volumes:
