@@ -22,10 +22,10 @@ RUN mkdir -p uploads
 
 # Environment
 ENV PYTHONUNBUFFERED=1 \
-	PORT=6001
+	PORT=6000
 
 # Expose Flask port
-EXPOSE 6001
+EXPOSE 6000
 
 # Run the Flask server
 CMD ["python", "flask_server.py"]

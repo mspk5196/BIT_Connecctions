@@ -36,7 +36,7 @@ RUN npm install -g serve
 COPY --from=builder /app/dist ./dist
 
 # Expose port
-EXPOSE 8081
+EXPOSE 8082
 
 # Health check – check the app inside the container
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
