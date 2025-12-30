@@ -61,6 +61,13 @@ app.use(
 //   })
 // );
 
+// Security headers for Google OAuth
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+  next();
+});
+
 // no app.options(...) at all
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -68,11 +75,11 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/auth", authRoute);
 app.use("/api", ContactRoute);
 app.use("/auth", googleAuthRoute);
-app.listen(process.env.PORT,'0.0.0.0', () => {
+app.listen(process.env.PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
 
-// User Login → LoginAuth.js → Creates JWT → Sets HTTP Cookie → 
-// AuthStore updates → PrivateRoutes allows access → Applayout renders → 
-// Every request uses axios → Sends cookies → AuthMiddleware verifies → 
+// User Login → LoginAuth.js → Creates JWT → Sets HTTP Cookie →
+// AuthStore updates → PrivateRoutes allows access → Applayout renders →
+// Every request uses axios → Sends cookies → AuthMiddleware verifies →
 // Protected routes accessible

@@ -41,7 +41,7 @@ async function db(strings, ...values) {
 // Add unsafe method for raw SQL fragments (use with caution!)
 db.unsafe = (rawSQL) => {
   // Return a special marker object that tells the template function to insert raw SQL
-  return { __raw: true, sql: rawSQL };
+  return { __raw: true, sql: rawSQL || "" };
 };
 
 // Expose raw query and pool for code that expects them

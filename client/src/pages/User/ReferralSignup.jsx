@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 import Alert from "../../components/Alert/Alert";
 import api from "../../utils/axios";
+import { useAuthStore } from "../../store/AuthStore";
 
 function ReferralSignup() {
   const [searchParams] = useSearchParams();
@@ -16,6 +17,7 @@ function ReferralSignup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
+  const { setAuth } = useAuthStore();
   const [alert, setAlert] = useState({
     isOpen: false,
     severity: "success",
