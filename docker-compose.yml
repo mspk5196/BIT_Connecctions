@@ -84,6 +84,8 @@ services:
 networks:
   bitconnections-network:
     driver: bridge
+  reverse-proxy:
+    external: true
 
 volumes:
   postgres_data:
