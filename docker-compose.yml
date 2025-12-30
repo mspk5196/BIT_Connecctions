@@ -20,6 +20,7 @@ services:
     restart: unless-stopped
     networks:
       - bitconnections-network
+      - reverse-proxy
 
   # Backend Service
   backend:
@@ -38,6 +39,7 @@ services:
     restart: unless-stopped
     networks:
       - bitconnections-network
+      - reverse-proxy
 
   # OCR Flask Service
   ocr_service:
@@ -56,6 +58,7 @@ services:
     restart: unless-stopped
     networks:
       - bitconnections-network
+      - reverse-proxy
 
   # Postgres Database Service (Optional - if you're using Postgres)
   postgres:
@@ -71,6 +74,7 @@ services:
     restart: unless-stopped
     networks:
       - bitconnections-network
+      - reverse-proxy
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
       interval: 10s
