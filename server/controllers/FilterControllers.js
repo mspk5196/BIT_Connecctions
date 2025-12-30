@@ -361,7 +361,7 @@ export const GetFilteredContacts = async (req, res) => {
       LEFT JOIN contact_education ce ON c.contact_id = ce.contact_id
       LEFT JOIN contact_experience exp ON c.contact_id = exp.contact_id
       LEFT JOIN event e ON c.contact_id = e.contact_id
-      ${whereClause ? db.unsafe(whereClause) : db``}
+      ${whereClause ? db.unsafe(whereClause) : db.unsafe("")}
       ORDER BY ${db.unsafe(`c.${sortField} ${sortDirection}`)}
       LIMIT ${limitNumber}
       OFFSET ${offset}
@@ -375,7 +375,7 @@ export const GetFilteredContacts = async (req, res) => {
       LEFT JOIN contact_education ce ON c.contact_id = ce.contact_id
       LEFT JOIN contact_experience exp ON c.contact_id = exp.contact_id
       LEFT JOIN event e ON c.contact_id = e.contact_id
-      ${whereClause ? db.unsafe(whereClause) : db``}
+      ${whereClause ? db.unsafe(whereClause) : db.unsafe("")}
     `;
 
     const totalContacts = parseInt(countResult.total);
@@ -511,8 +511,8 @@ export const GetFilterOptions = async (req, res) => {
     const genders = await db`
       SELECT DISTINCT gender as value, COUNT(*)::text as count 
       FROM contact c WHERE gender IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY gender 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -522,8 +522,8 @@ export const GetFilterOptions = async (req, res) => {
     const categories = await db`
       SELECT DISTINCT category as value, COUNT(*)::text as count 
       FROM contact c WHERE category IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY category 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -534,8 +534,8 @@ export const GetFilterOptions = async (req, res) => {
       SELECT DISTINCT nationality as value, COUNT(*)::text as count 
       FROM contact c 
       WHERE nationality IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY nationality 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -546,8 +546,8 @@ export const GetFilterOptions = async (req, res) => {
       SELECT DISTINCT marital_status as value, COUNT(*)::text as count 
       FROM contact c 
       WHERE marital_status IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY marital_status 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -558,8 +558,8 @@ export const GetFilterOptions = async (req, res) => {
       SELECT DISTINCT ca.country as value, COUNT(DISTINCT c.contact_id)::text as count
       FROM contact c JOIN contact_address ca ON c.contact_id = ca.contact_id
       WHERE ca.country IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY ca.country 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -570,8 +570,8 @@ export const GetFilterOptions = async (req, res) => {
       SELECT DISTINCT ca.state as value, COUNT(DISTINCT c.contact_id)::text as count
       FROM contact c JOIN contact_address ca ON c.contact_id = ca.contact_id
       WHERE ca.state IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY ca.state 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -582,8 +582,8 @@ export const GetFilterOptions = async (req, res) => {
       SELECT DISTINCT ca.city as value, COUNT(DISTINCT c.contact_id)::text as count
       FROM contact c JOIN contact_address ca ON c.contact_id = ca.contact_id
       WHERE ca.city IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY ca.city 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -594,8 +594,8 @@ export const GetFilterOptions = async (req, res) => {
       SELECT DISTINCT exp.company as value, COUNT(DISTINCT c.contact_id)::text as count
       FROM contact c JOIN contact_experience exp ON c.contact_id = exp.contact_id
       WHERE exp.company IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY exp.company 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -606,8 +606,8 @@ export const GetFilterOptions = async (req, res) => {
       SELECT DISTINCT exp.job_title as value, COUNT(DISTINCT c.contact_id)::text as count
       FROM contact c JOIN contact_experience exp ON c.contact_id = exp.contact_id
       WHERE exp.job_title IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY exp.job_title 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -618,8 +618,8 @@ export const GetFilterOptions = async (req, res) => {
       SELECT DISTINCT ce.pg_course_name as value, COUNT(DISTINCT c.contact_id)::text as count
       FROM contact c JOIN contact_education ce ON c.contact_id = ce.contact_id
       WHERE ce.pg_course_name IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY ce.pg_course_name 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -630,8 +630,8 @@ export const GetFilterOptions = async (req, res) => {
       SELECT DISTINCT ce.ug_course_name as value, COUNT(DISTINCT c.contact_id)::text as count
       FROM contact c JOIN contact_education ce ON c.contact_id = ce.contact_id
       WHERE ce.ug_course_name IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
       GROUP BY ce.ug_course_name 
       ORDER BY count DESC
       LIMIT ${limitNumber}
@@ -644,7 +644,7 @@ export const GetFilterOptions = async (req, res) => {
         ? rejectedFilter
           ? db`SELECT skills FROM contact c WHERE skills IS NOT NULL AND skills != '' ${db.unsafe(rejectedFilter)} LIMIT ${limitNumber * 2} OFFSET ${offset}`
           : db`SELECT skills FROM contact WHERE skills IS NOT NULL AND skills != '' LIMIT ${limitNumber * 2} OFFSET ${offset}`
-        : db`SELECT skills FROM contact c WHERE skills IS NOT NULL AND skills != '' ${db.unsafe(categoryFilter)} ${rejectedFilter ? db.unsafe(rejectedFilter) : db``} LIMIT ${limitNumber * 2} OFFSET ${offset}`;
+        : db`SELECT skills FROM contact c WHERE skills IS NOT NULL AND skills != '' ${db.unsafe(categoryFilter)} ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")} LIMIT ${limitNumber * 2} OFFSET ${offset}`;
 
     const skillsData = await skillsQuery;
 
@@ -671,8 +671,8 @@ export const GetFilterOptions = async (req, res) => {
     const [totalGendersResult] = await db`
       SELECT COUNT(DISTINCT gender) as total
       FROM contact c WHERE gender IS NOT NULL 
-      ${categoryFilter ? db.unsafe(categoryFilter) : db``}
-      ${rejectedFilter ? db.unsafe(rejectedFilter) : db``}
+      ${categoryFilter ? db.unsafe(categoryFilter) : db.unsafe("")}
+      ${rejectedFilter ? db.unsafe(rejectedFilter) : db.unsafe("")}
     `;
 
     const totalPages = Math.ceil(parseInt(totalGendersResult.total) / limitNumber);
@@ -721,3 +721,4 @@ export const GetFilterOptions = async (req, res) => {
     });
   }
 };
+
