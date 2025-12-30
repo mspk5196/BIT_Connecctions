@@ -24,14 +24,25 @@ async function db(strings, ...values) {
   for (let i = 0; i < strings.length; i++) {
     text += strings[i];
     if (i < values.length) {
-      params.push(values[i]);
-      text += `$${params.length}`;
+      // Check if this is an unsafe raw SQL fragment
+      if (values[i] && typeof values[i] === "object" && values[i].__raw) {
+        text += values[i].sql;
+      } else {
+        params.push(values[i]);
+        text += `$${params.length}`;
+      }
     }
   }
 
   const res = await pool.query(text, params);
   return res.rows;
 }
+
+// Add unsafe method for raw SQL fragments (use with caution!)
+db.unsafe = (rawSQL) => {
+  // Return a special marker object that tells the template function to insert raw SQL
+  return { __raw: true, sql: rawSQL };
+};
 
 // Expose raw query and pool for code that expects them
 db.query = (text, params) => pool.query(text, params);

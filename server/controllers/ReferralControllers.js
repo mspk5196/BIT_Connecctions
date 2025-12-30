@@ -66,7 +66,7 @@ const sendReferralEmail = async (inviteeEmail, referrerEmail, referralLink) => {
                         If you didn't expect this invitation, you can safely ignore this email.
                     </p>
                 </div>
-            </body>
+            </body> 
             </html>
         `
     };
