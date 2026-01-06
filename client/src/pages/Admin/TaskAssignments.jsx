@@ -179,7 +179,7 @@ function TaskAssignments() {
     try {
       setIsSubmitting(true);
       console.log("Creating task with data:", taskData);
-      await api.post("/create-task", taskData);
+      await api.post("/contact/create-task", taskData);
       setShowCreateForm(false);
       showAlert("success", "Task created successfully");
       getTasks();
@@ -209,7 +209,7 @@ function TaskAssignments() {
         return;
       }
 
-      const response = await api.put(`/update-task/${taskId}`, taskData);
+      const response = await api.put(`/contact/update-task/${taskId}`, taskData);
       console.log("🔧 Update response:", response.data);
 
       setShowEditForm(false);
@@ -238,7 +238,7 @@ function TaskAssignments() {
         return;
       }
 
-      await api.delete(`/delete-task/${taskId}`);
+      await api.delete(`/contact/delete-task/${taskId}`);
       setShowDeleteConfirm(false);
       setDeletingTask(null);
       showAlert("success", "Task deleted successfully");
