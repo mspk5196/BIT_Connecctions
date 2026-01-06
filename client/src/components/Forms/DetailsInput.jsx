@@ -984,7 +984,7 @@ function DetailsInput() {
         if (source === "middleman") {
           // For MiddleManRecords - approve contact
           response = await api.put(
-            `/api/update-contact/${apiPayload.contact_id}?contact_status=approved&event_verified=true&userId=${id}`,
+            `/contact/update-contact/${apiPayload.contact_id}?contact_status=approved&event_verified=true&userId=${id}`,
             apiPayload
           );
           successMessage = `${
@@ -994,7 +994,7 @@ function DetailsInput() {
         } else if (source === "userassignments") {
           // For UserAssignments - update as pending
           response = await api.put(
-            `/api/update-contact/${apiPayload.contact_id}?event_verified=false&contact_status=pending&userId=${id}`,
+            `/contact/update-contact/${apiPayload.contact_id}?event_verified=false&contact_status=pending&userId=${id}`,
             apiPayload
           );
           successMessage =
@@ -1029,7 +1029,7 @@ function DetailsInput() {
         let response;
         let successMessage = "";
         response = await api.post(
-          `/api/create-contact-by-admin/?contact_status=approved&event_verified=true`,
+          `/contact/create-contact-by-admin/?contact_status=approved&event_verified=true`,
           apiPayload
         );
         successMessage = `${apiPayload.name} has been successfully added to contacts.`;
@@ -1046,11 +1046,11 @@ function DetailsInput() {
 
         console.log(
           "Making PUT request to:",
-          `/api/update-contact/${apiPayload.contact_id}?userId=${id}`
+          `/contact/update-contact/${apiPayload.contact_id}?userId=${id}`
         );
 
         const response = await api.put(
-          `/api/update-contact/${apiPayload.contact_id}?userId=${id}`,
+          `/contact/update-contact/${apiPayload.contact_id}?userId=${id}`,
           apiPayload
         );
 

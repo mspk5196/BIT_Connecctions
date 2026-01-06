@@ -104,7 +104,7 @@ function UserEntries() {
 
         if (userToDelete.type === "image") {
           const response = await api.delete(
-            `/api/delete-image/${userToDelete.id}?userType=${role}`
+            `/contact/delete-image/${userToDelete.id}?userType=${role}`
           );
 
           if (response.data.action === "deleted") {
@@ -140,7 +140,7 @@ function UserEntries() {
           }
         } else {
           const response = await api.delete(
-            `/delete-contact/${userToDelete.id}?userType=${role}&userId=${id}&eventId=${userToDelete.event_id}`
+            `/contact/delete-contact/${userToDelete.id}?userType=${role}&userId=${id}&eventId=${userToDelete.event_id}`
           );
 
           if (response.data.action === "deleted") {

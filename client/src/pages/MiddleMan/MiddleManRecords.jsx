@@ -33,7 +33,7 @@ function MiddleManRecords() {
 
   const handleSelectContact = () => {
     api
-      .get(`/api/get-unverified-contacts/`)
+      .get(`/contact/get-unverified-contacts/`)
       .then((response) => {
         console.log("Contacts fetched successfully:", response.data.data);
         setData(response.data.data);
@@ -158,7 +158,7 @@ function MiddleManRecords() {
         switch (userToDelete.type) {
           case "contact":
             await api.delete(
-              `/api/delete-contact/${userToDelete.id}?userType=${role}&eventId=${userToDelete.event_id}`
+              `/contact/delete-contact/${userToDelete.id}?userType=${role}&eventId=${userToDelete.event_id}`
             );
 
             setData((prevData) => {
@@ -182,7 +182,7 @@ function MiddleManRecords() {
 
           case "assignment":
             await api.delete(
-              `/api/delete-assignment/${userToDelete.assignment_id}`
+              `/contact/delete-assignment/${userToDelete.assignment_id}`
             );
 
             setAssignedByUserData((prevData) =>
@@ -199,7 +199,7 @@ function MiddleManRecords() {
 
           case "visitingCard":
             await api.delete(
-              `/api/delete-image/${userToDelete.id}?userType=${role}`
+              `/contact/delete-image/${userToDelete.id}?userType=${role}`
             );
 
             setVisitingCard((prevData) =>

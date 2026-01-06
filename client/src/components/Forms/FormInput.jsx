@@ -152,7 +152,7 @@ function FormInput() {
         };
 
         response = await api.put(
-          `/update-contacts-and-events/${
+          `/contact/update-contacts-and-events/${
             initialData.id || initialData.contact_id
           }/${id}`,
           eventToUpdate
@@ -169,7 +169,7 @@ function FormInput() {
 
         if (contactChanged) {
           response = await api.put(
-            `/update-contacts-and-events/${selectedContact.contact_id}/${id}`,
+            `/contact/update-contacts-and-events/${selectedContact.contact_id}/${id}`,
             formData
           );
           showAlert("success", `Contact has been successfully updated.`);
@@ -184,7 +184,7 @@ function FormInput() {
           };
 
           response = await api.post(
-            `/api/add-event-existing-contact/${selectedContact.contact_id}/${id}`,
+            `/contact/add-event-existing-contact/${selectedContact.contact_id}/${id}`,
             eventData
           );
           showAlert(
@@ -193,7 +193,7 @@ function FormInput() {
           );
         }
       } else {
-        response = await api.post(`/api/create-contact`, formData);
+        response = await api.post(`/contact/create-contact`, formData);
         showAlert("success", `Contact has been successfully added.`);
       }
 
@@ -320,7 +320,7 @@ function FormInput() {
 
       // Use the correct endpoint - should match your existing search endpoint
       const response = await api.get(
-        `/api/search-contact?q=${encodeURIComponent(query)}`
+        `/contact/search-contact?q=${encodeURIComponent(query)}`
       );
       console.log("API Response:", response.data); // Debug log
 

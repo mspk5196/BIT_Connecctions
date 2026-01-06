@@ -44,7 +44,7 @@ const ContactAutocomplete = ({
     try {
       setIsLoading(true);
       const response = await api.get(
-        `/api/search-contact?q=${encodeURIComponent(searchQuery)}`
+        `/contact/search-contact?q=${encodeURIComponent(searchQuery)}`
       );
       
       const contacts = response.data.data || response.data.contacts || response.data || [];

@@ -350,8 +350,8 @@ function Admin() {
 
         const [allContactsResponse, unverifiedContactsResponse] =
           await Promise.all([
-            api.get("/get-all-contact/"),
-            api.get("/get-unverified-contacts/"),
+            api.get("/contact/get-all-contact/"),
+            api.get("/contact/get-unverified-contacts/"),
           ]);
 
         const allContacts = allContactsResponse.data?.data || [];
@@ -437,7 +437,7 @@ function Admin() {
         setTimeout(async () => {
           try {
             const unverifiedImagesResponse = await api.get(
-              "/api/get-unverified-images/"
+              "/contact/get-unverified-images/"
             );
             const unverifiedImages = unverifiedImagesResponse.data?.data || [];
             const totalUnverifiedContacts =
@@ -561,7 +561,7 @@ function Admin() {
           status: "Processing contacts...",
         }));
 
-        const response = await api.post("/import-csv", formData, {
+        const response = await api.post("/contact/import-csv", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
@@ -664,7 +664,7 @@ function Admin() {
         onClick: async () => {
           try {
             setIsRefreshing(true);
-            const response = await api.get("/get-all-contact/");
+            const response = await api.get("/contact/get-all-contact/");
             const exportContacts = response.data.data || [];
 
             if (exportContacts.length === 0) {

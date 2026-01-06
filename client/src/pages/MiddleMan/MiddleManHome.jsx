@@ -664,8 +664,8 @@ const MiddleManHome = () => {
         const category = rolesDict[role];
 
         const url = category
-          ? `/api/get-filter-options?category=${role}`
-          : `/api/get-filter-options?category=${role}`;
+          ? `/contact/get-filter-options?category=${role}`
+          : `/contact/get-filter-options?category=${role}`;
 
         const response = await api.get(url);
         console.log("Filter Options: ", response.data);
@@ -725,11 +725,11 @@ const MiddleManHome = () => {
       });
 
       console.log(
-        `🔍 Fetching contacts - Page ${page}, URL: /api/contacts/filter/?${params.toString()}`
+        `🔍 Fetching contacts - Page ${page}, URL: /contact/contacts/filter/?${params.toString()}`
       );
 
       const response = await api.get(
-        `/api/contacts/filter/?${params.toString()}`
+        `/contact/contacts/filter/?${params.toString()}`
       );
 
       // Handle the response structure from GetFilteredContacts API
@@ -886,7 +886,7 @@ const MiddleManHome = () => {
       console.log("Saving data:", updatedData);
 
       const response = await api.put(
-        `/api/update-contact/${updatedData.contact_id}`,
+        `/contact/update-contact/${updatedData.contact_id}`,
         updatedData
       );
 

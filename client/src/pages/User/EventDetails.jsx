@@ -211,7 +211,7 @@ function EventDetails() {
       formData.append("eventLocation", eventData.eventLocation);
 
       const res = await api.post(
-        "/api/upload-contact",
+        "/contact/upload-contact",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

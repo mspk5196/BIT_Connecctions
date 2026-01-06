@@ -540,7 +540,10 @@ const VisitingCardDetails = () => {
 
       console.log("Transformed data for API:", transformedData);
 
-      const response = await api.post("/create-contact", transformedData);
+      const response = await api.post(
+        "/contact/create-contact",
+        transformedData
+      );
       const response2 = await api.post(`/verify-image/${id}`, transformedData);
 
       console.log("Contact created successfully:", response.data);

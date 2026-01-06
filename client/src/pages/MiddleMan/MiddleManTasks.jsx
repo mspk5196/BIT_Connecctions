@@ -79,7 +79,7 @@ const TasksPage = () => {
 
       // Use the updated GetFilteredContacts API with contact_id parameter
       const response = await api.get(
-        `/api/contacts/filter/?contact_id=${contactId}`
+        `/contact/contacts/filter/?contact_id=${contactId}`
       );
 
       if (!response.data.success) {
@@ -160,7 +160,7 @@ const TasksPage = () => {
         if (category) {
           // Fetch all tasks (both pending and completed)
           const response = await api.get(
-            `/api/get-tasks/?category=${category}`
+            `/contact/get-tasks/?category=${category}`
           );
 
           console.log("API Response:", response.data);

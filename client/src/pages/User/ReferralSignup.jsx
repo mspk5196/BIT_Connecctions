@@ -57,7 +57,7 @@ function ReferralSignup() {
     const handleBeforeUnload = () => {
       if (!hasRegistered.current && linkValid && !loading) {
         navigator.sendBeacon(
-          "/api/invalidate-invitation",
+          "/contact/invalidate-invitation",
           JSON.stringify({ token: referralToken })
         );
       }
@@ -68,7 +68,7 @@ function ReferralSignup() {
       heartbeatInterval.current = setInterval(() => {
         if (!hasRegistered.current && linkValid) {
           api
-            .post("/api/invitation-heartbeat", {
+            .post("/contact/invitation-heartbeat", {
               token: referralToken,
             })
             .catch((error) => {
@@ -133,7 +133,7 @@ function ReferralSignup() {
 
     try {
       const response = await api.get(
-        `/api/validate-referral/${tokenToValidate}`
+        `/contact/validate-referral/${tokenToValidate}`
       );
 
       if (response.data.valid) {

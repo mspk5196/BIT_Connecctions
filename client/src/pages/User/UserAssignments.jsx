@@ -222,7 +222,7 @@ function UserAssignments() {
         switch (userToDelete.type) {
           case "assignment":
             await api.delete(
-              `/api/delete-assignment/${userToDelete.assignment_id}`
+              `/contact/delete-assignment/${userToDelete.assignment_id}`
             );
             setData((prevData) =>
               prevData.filter((user) => user.contact_id !== userToDelete.id)
@@ -234,7 +234,7 @@ function UserAssignments() {
             break;
 
           case "contact":
-            await api.delete(`/api/delete-contact/${userToDelete.id}`);
+            await api.delete(`/contact/delete-contact/${userToDelete.id}`);
             setData((prevData) =>
               prevData.filter((user) => user.contact_id !== userToDelete.id)
             );
