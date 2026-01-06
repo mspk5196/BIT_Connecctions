@@ -43,7 +43,7 @@ const SkillAutoFinish = ({
     try {
       setLoading(true);
       const response = await api.get(
-        `/contact/search-skills/?q=${encodeURIComponent(query)}`
+        `/contact/contacts/search-skills/?q=${encodeURIComponent(query)}`
       );
 
       if (response.data.success) {
