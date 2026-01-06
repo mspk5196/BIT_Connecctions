@@ -420,7 +420,7 @@ export const CreateContact = async (req, res) => {
   }
 
   try {
-    const result = await db(async (t) => {
+    const result = await db.begin(async (t) => {
       const existingContactsResult = await t`
           SELECT * FROM contact 
           WHERE (email_address = ${email_address} AND email_address IS NOT NULL)
@@ -831,7 +831,7 @@ export const UpdateContactAndEvents = async (req, res) => {
   }
 
   try {
-    const result = await db(async (t) => {
+    const result = await db.begin(async (t) => {
       const contactResults = await t`
         UPDATE contact
         SET
@@ -995,7 +995,7 @@ export const UpdateContact = async (req, res) => {
   });
 
   try {
-    const result = await db(async (t) => {
+    const result = await db.begin(async (t) => {
       let contactRecord;
       let existingContact = null;
       let wasExistingContact = false;
@@ -1448,7 +1448,7 @@ export const DeleteContact = async (req, res) => {
   const { userType = null, eventId = null } = req.query;
   console.log(contactId, userType, eventId);
   try {
-    await db(async (t) => {
+    await db.begin(async (t) => {
       let contact;
 
       if (eventId && eventId !== "null") {
@@ -1559,7 +1559,7 @@ export const DeleteVerifiedContact = async (req, res) => {
   );
 
   try {
-    await db(async (t) => {
+    await db.begin(async (t) => {
       // Check if contact exists in the main contact table
       const [contactExists] = await t`
         SELECT contact_id FROM contact WHERE contact_id = ${contactId}
