@@ -44,6 +44,51 @@ db.unsafe = (rawSQL) => {
   return { __raw: true, sql: rawSQL || "" };
 };
 
+// Add transaction support
+db.begin = async (callback) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    // Create a tagged-template function that uses this client
+    const t = async (strings, ...values) => {
+      let text = "";
+      const params = [];
+
+      for (let i = 0; i < strings.length; i++) {
+        text += strings[i];
+        if (i < values.length) {
+          if (values[i] && typeof values[i] === "object" && values[i].__raw) {
+            text += values[i].sql;
+          } else {
+            params.push(values[i]);
+            text += `$${params.length}`;
+          }
+        }
+      }
+
+      const res = await client.query(text, params);
+      return res.rows;
+    };
+
+    // Execute the transaction callback
+    const result = await callback(t);
+
+    // Commit the transaction
+    await client.query("COMMIT");
+
+    return result;
+  } catch (error) {
+    // Rollback on error
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    // Release the client back to the pool
+    client.release();
+  }
+};
+
 // Expose raw query and pool for code that expects them
 db.query = (text, params) => pool.query(text, params);
 db.pool = pool;

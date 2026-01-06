@@ -314,7 +314,7 @@ function Admin() {
 
     const fetchModificationHistory = async () => {
       try {
-        const response = await api.get("/get-all-modification-history/");
+        const response = await api.get("/contact/get-all-modification-history/");
         const data = response.data;
         if (data.success && data.data) {
           const limitedData = data.data.slice(-500);

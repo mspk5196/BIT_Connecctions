@@ -12,7 +12,7 @@ const OnlineUsersCard = () => {
 
   const fetchOnlineUsers = async () => {
     try {
-      const response = await api.get("/users/online");
+      const response = await api.get("/contact/users/online");
 
       if (response.data.success) {
         setOnlineUsers(response.data.data || []);

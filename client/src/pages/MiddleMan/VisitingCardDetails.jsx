@@ -145,7 +145,7 @@ const VisitingCardDetails = () => {
         setLoading(true);
 
         // Fetch all cards and find the one with matching ID
-        const response = await api.get(`/get-unverified-images/`);
+        const response = await api.get(`/contact/get-unverified-images/`);
         const card = response.data.data.find((card) => {
           return card.id.toString() === id.toString();
         });

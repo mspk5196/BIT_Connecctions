@@ -142,7 +142,7 @@ function UserAssignments() {
   const getData = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/get-assignment/${id}`);
+      const response = await api.get(`/contact/get-assignment/${id}`);
       console.log("User assignments fetched successfully:", response.data);
       setData(response.data);
     } catch (error) {

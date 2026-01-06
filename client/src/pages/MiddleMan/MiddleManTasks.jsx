@@ -204,7 +204,7 @@ const TasksPage = () => {
     try {
       const taskToComplete = tasks.find((task) => task.id === taskId);
 
-      const response = await api.put(`/complete-task/${taskId}`, {
+      const response = await api.put(`/contact/complete-task/${taskId}`, {
         modified_by: id,
       });
 

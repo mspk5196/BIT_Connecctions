@@ -109,7 +109,7 @@ function Applayout() {
     const pingInterval = setInterval(async () => {
       if (navigator.onLine) {
         try {
-          await api.post(`/user/ping/${id}`);
+          await api.post(`/contact/user/ping/${id}`);
         } catch (error) {
           console.error("Ping failed:", error);
         }

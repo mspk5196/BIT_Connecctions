@@ -72,7 +72,7 @@ function TaskAssignments() {
   const getTasks = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/get-tasks?category=${role}`);
+      const response = await api.get(`/contact/get-tasks?category=${role}`);
       setData(response.data.data);
       setStats(response.data.stats);
 

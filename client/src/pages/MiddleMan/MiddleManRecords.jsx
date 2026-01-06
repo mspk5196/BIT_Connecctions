@@ -46,7 +46,7 @@ function MiddleManRecords() {
 
   const handleSelectUnverifiedVisitingCards = async () => {
     try {
-      const response = await api.get(`/get-unverified-images/`);
+      const response = await api.get(`/contact/get-unverified-images/`);
       console.log("Visiting cards fetched successfully:", response.data.data);
       setVisitingCard(response.data.data || []);
     } catch (error) {
@@ -58,7 +58,7 @@ function MiddleManRecords() {
   const handleSelectAssignedByUser = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/get-assigned-to/${id}`);
+      const response = await api.get(`/contact/get-assigned-to/${id}`);
       console.log("Assigned by user data fetched successfully:", response.data);
       setAssignedByUserData(response.data);
     } catch (error) {
