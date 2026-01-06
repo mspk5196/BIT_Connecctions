@@ -16,14 +16,14 @@ function ContactNetworkAnalysis() {
   const fetchNetworkData = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/api/analyze-contact-network");
+      const response = await api.get("/analyze-contact-network");
       setNetworkData(response.data);
       console.log("Network data loaded:", response.data);
     } catch (err) {
       setError(
         err.response?.data?.error ||
-        err.message ||
-        "Failed to fetch network data"
+          err.message ||
+          "Failed to fetch network data"
       );
       console.error("Error fetching network data:", err);
     } finally {
@@ -54,7 +54,11 @@ function ContactNetworkAnalysis() {
         <div className="flex items-center justify-center h-screen">
           <div className="text-center bg-white p-8 rounded-lg shadow max-w-md">
             <div className="text-red-500 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+              <svg
+                className="w-16 h-16 mx-auto"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
                 <path
                   fillRule="evenodd"
                   d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"

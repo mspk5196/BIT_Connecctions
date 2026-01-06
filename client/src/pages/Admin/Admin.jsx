@@ -314,7 +314,7 @@ function Admin() {
 
     const fetchModificationHistory = async () => {
       try {
-        const response = await api.get("/api/get-all-modification-history/");
+        const response = await api.get("/get-all-modification-history/");
         const data = response.data;
         if (data.success && data.data) {
           const limitedData = data.data.slice(-500);
@@ -350,8 +350,8 @@ function Admin() {
 
         const [allContactsResponse, unverifiedContactsResponse] =
           await Promise.all([
-            api.get("/api/get-all-contact/"),
-            api.get("/api/get-unverified-contacts/"),
+            api.get("/get-all-contact/"),
+            api.get("/get-unverified-contacts/"),
           ]);
 
         const allContacts = allContactsResponse.data?.data || [];
@@ -561,7 +561,7 @@ function Admin() {
           status: "Processing contacts...",
         }));
 
-        const response = await api.post("/api/import-csv", formData, {
+        const response = await api.post("/import-csv", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
@@ -664,7 +664,7 @@ function Admin() {
         onClick: async () => {
           try {
             setIsRefreshing(true);
-            const response = await api.get("/api/get-all-contact/");
+            const response = await api.get("/get-all-contact/");
             const exportContacts = response.data.data || [];
 
             if (exportContacts.length === 0) {

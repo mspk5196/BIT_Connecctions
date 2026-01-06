@@ -142,7 +142,7 @@ function UserAssignments() {
   const getData = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/api/get-assignment/${id}`);
+      const response = await api.get(`/get-assignment/${id}`);
       console.log("User assignments fetched successfully:", response.data);
       setData(response.data);
     } catch (error) {
@@ -234,9 +234,7 @@ function UserAssignments() {
             break;
 
           case "contact":
-            await api.delete(
-              `/api/delete-contact/${userToDelete.id}`
-            );
+            await api.delete(`/api/delete-contact/${userToDelete.id}`);
             setData((prevData) =>
               prevData.filter((user) => user.contact_id !== userToDelete.id)
             );
@@ -303,8 +301,9 @@ function UserAssignments() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div
-                      className={`w-3 h-3 ${data.length === 0 ? "bg-red-500" : "bg-green-400"
-                        } rounded-full mr-2`}
+                      className={`w-3 h-3 ${
+                        data.length === 0 ? "bg-red-500" : "bg-green-400"
+                      } rounded-full mr-2`}
                     ></div>
                     <span className="text-sm text-gray-600">
                       {data.length} Assigned Contact
@@ -349,9 +348,9 @@ function UserAssignments() {
                       assignedOn={
                         participant.created_at
                           ? format(
-                            parseISO(participant.created_at),
-                            "MMMM dd, yyyy"
-                          )
+                              parseISO(participant.created_at),
+                              "MMMM dd, yyyy"
+                            )
                           : "N/A"
                       }
                     />

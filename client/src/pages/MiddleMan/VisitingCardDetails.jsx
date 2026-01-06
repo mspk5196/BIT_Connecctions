@@ -145,7 +145,7 @@ const VisitingCardDetails = () => {
         setLoading(true);
 
         // Fetch all cards and find the one with matching ID
-        const response = await api.get(`/api/get-unverified-images/`);
+        const response = await api.get(`/get-unverified-images/`);
         const card = response.data.data.find((card) => {
           return card.id.toString() === id.toString();
         });
@@ -318,10 +318,9 @@ const VisitingCardDetails = () => {
 
     try {
       // Create a blob from the image URL to send to Flask OCR API
-      const imageUrl = `${import.meta.env.VITE_BASE_URL}/${currentCard.file_path.replace(
-        /\\/g,
-        "/"
-      )}`;
+      const imageUrl = `${
+        import.meta.env.VITE_BASE_URL
+      }/${currentCard.file_path.replace(/\\/g, "/")}`;
 
       // Fetch the image as a blob
       const imageResponse = await fetch(imageUrl);
@@ -336,10 +335,13 @@ const VisitingCardDetails = () => {
       formData.append("file", imageBlob, "visiting-card.jpg");
 
       // Call Flask OCR API directly
-      const ocrResponse = await fetch(`${import.meta.env.VITE_AI_BASE_URL}/extract-card`, {
-        method: "POST",
-        body: formData,
-      });
+      const ocrResponse = await fetch(
+        `${import.meta.env.VITE_AI_BASE_URL}/extract-card`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!ocrResponse.ok) {
         throw new Error(`HTTP error! status: ${ocrResponse.status}`);
@@ -538,11 +540,8 @@ const VisitingCardDetails = () => {
 
       console.log("Transformed data for API:", transformedData);
 
-      const response = await api.post("/api/create-contact", transformedData);
-      const response2 = await api.post(
-        `/api/verify-image/${id}`,
-        transformedData
-      );
+      const response = await api.post("/create-contact", transformedData);
+      const response2 = await api.post(`/verify-image/${id}`, transformedData);
 
       console.log("Contact created successfully:", response.data);
 
@@ -1661,10 +1660,9 @@ const VisitingCardDetails = () => {
                   >
                     {currentCard?.file_path ? (
                       <img
-                        src={`http://localhost:8000/${currentCard.file_path.replace(
-                          /\\/g,
-                          "/"
-                        )}`}
+                        src={`${
+                          import.meta.env.VITE_BASE_URL
+                        }/${currentCard.file_path.replace(/\\/g, "/")}`}
                         alt="Visiting Card"
                         className="w-full h-full object-fill hover:scale-105 transition-transform duration-200"
                         onError={(e) => {
@@ -2024,10 +2022,9 @@ const VisitingCardDetails = () => {
               <div className="flex justify-center">
                 {currentCard?.file_path ? (
                   <img
-                    src={`http://localhost:8000/${currentCard.file_path.replace(
-                      /\\/g,
-                      "/"
-                    )}`}
+                    src={`${
+                      import.meta.env.VITE_BASE_URL
+                    }/${currentCard.file_path.replace(/\\/g, "/")}`}
                     alt="Visiting Card - Enlarged"
                     className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg transition-transform duration-300"
                     style={{ transform: `rotate(${imageRotation}deg)` }}

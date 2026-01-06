@@ -93,19 +93,19 @@ function FormInput() {
   const saveRecentEvent = (eventData) => {
     try {
       const existing = getRecentEvents();
-      
+
       // Create a unique key for each event based on all fields
       const eventKey = `${eventData.event_name}-${eventData.event_held_organization}-${eventData.event_location}`;
-      
+
       // Remove if already exists to avoid duplicates
-      const filtered = existing.filter(event => {
+      const filtered = existing.filter((event) => {
         const existingKey = `${event.event_name}-${event.event_held_organization}-${event.event_location}`;
         return existingKey !== eventKey;
       });
-      
+
       // Add to beginning of array
       const updated = [eventData, ...filtered].slice(0, 10); // Keep only 10 most recent
-      
+
       localStorage.setItem(`recent-events-${id}`, JSON.stringify(updated));
     } catch (error) {
       console.error("Error saving recent event:", error);
@@ -114,17 +114,19 @@ function FormInput() {
 
   const getEventSuggestions = (query, fieldName) => {
     const recentEvents = getRecentEvents();
-    
+
     if (!query || query.length < 1) return [];
-    
+
     return recentEvents
-      .filter(event => {
+      .filter((event) => {
         const fieldValue = event[fieldName];
-        return fieldValue && fieldValue.toLowerCase().includes(query.toLowerCase());
+        return (
+          fieldValue && fieldValue.toLowerCase().includes(query.toLowerCase())
+        );
       })
-      .map(event => ({
+      .map((event) => ({
         ...event,
-        matchedField: fieldName
+        matchedField: fieldName,
       }))
       .slice(0, 5); // Show max 5 suggestions
   };
@@ -150,7 +152,7 @@ function FormInput() {
         };
 
         response = await api.put(
-          `/api/update-contacts-and-events/${
+          `/update-contacts-and-events/${
             initialData.id || initialData.contact_id
           }/${id}`,
           eventToUpdate
@@ -167,7 +169,7 @@ function FormInput() {
 
         if (contactChanged) {
           response = await api.put(
-            `/api/update-contacts-and-events/${selectedContact.contact_id}/${id}`,
+            `/update-contacts-and-events/${selectedContact.contact_id}/${id}`,
             formData
           );
           showAlert("success", `Contact has been successfully updated.`);
@@ -191,16 +193,17 @@ function FormInput() {
           );
         }
       } else {
-        response = await api.post(
-          `/api/create-contact`,
-          formData
-        );
+        response = await api.post(`/api/create-contact`, formData);
         showAlert("success", `Contact has been successfully added.`);
       }
 
       // Save event to recent events for future autocomplete
       const eventData = formData.events[0];
-      if (eventData.event_name && eventData.event_held_organization && eventData.event_location) {
+      if (
+        eventData.event_name &&
+        eventData.event_held_organization &&
+        eventData.event_location
+      ) {
         saveRecentEvent(eventData);
       }
 
@@ -284,15 +287,15 @@ function FormInput() {
   // Click outside handler to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.autocomplete-container')) {
+      if (!event.target.closest(".autocomplete-container")) {
         setShowSuggestions(false);
         setShowEventSuggestions(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -317,9 +320,7 @@ function FormInput() {
 
       // Use the correct endpoint - should match your existing search endpoint
       const response = await api.get(
-        `/api/search-contact?q=${encodeURIComponent(
-          query
-        )}`
+        `/api/search-contact?q=${encodeURIComponent(query)}`
       );
       console.log("API Response:", response.data); // Debug log
 
@@ -419,7 +420,11 @@ function FormInput() {
     }
 
     // Handle event field autocomplete
-    const eventAutocompleteFields = ["event_name", "event_held_organization", "event_location"];
+    const eventAutocompleteFields = [
+      "event_name",
+      "event_held_organization",
+      "event_location",
+    ];
     if (eventAutocompleteFields.includes(name) && value.trim().length > 0) {
       const suggestions = getEventSuggestions(value, name);
       setEventSuggestions(suggestions);
@@ -1012,7 +1017,8 @@ function FormInput() {
                           <div className="absolute z-20 w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-2xl overflow-hidden max-h-80">
                             <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
                               <p className="text-xs font-medium text-gray-600">
-                                Recent organizations ({eventSuggestions.length} found)
+                                Recent organizations ({eventSuggestions.length}{" "}
+                                found)
                               </p>
                               <button
                                 type="button"
@@ -1060,7 +1066,8 @@ function FormInput() {
                           <div className="absolute z-20 w-full bg-white border border-gray-200 rounded-xl mt-1 shadow-2xl overflow-hidden max-h-80">
                             <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
                               <p className="text-xs font-medium text-gray-600">
-                                Recent locations ({eventSuggestions.length} found)
+                                Recent locations ({eventSuggestions.length}{" "}
+                                found)
                               </p>
                               <button
                                 type="button"

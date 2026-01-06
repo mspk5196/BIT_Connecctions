@@ -84,7 +84,7 @@ const sendReferralEmail = async (inviteeEmail, referrerEmail, referralLink) => {
     throw error;
   }
 };
-
+// referral sending controller
 export const sendReferralInvitation = async (req, res) => {
   try {
     console.log("🔍 Backend: FRONTEND_URL loaded:", process.env.FRONTEND_URL);
@@ -120,7 +120,7 @@ export const sendReferralInvitation = async (req, res) => {
     // Check if invitee already has an account
     const inviteeCheck =
       await db`SELECT email FROM login WHERE email = ${inviteeEmail}`;
-
+      
     if (inviteeCheck.length > 0) {
       return res.status(400).json({
         success: false,
@@ -135,7 +135,7 @@ export const sendReferralInvitation = async (req, res) => {
             AND is_used = FALSE 
             AND expires_at > NOW()
         `;
-
+  
     if (existingInvitation.length > 0) {
       return res.status(400).json({
         success: false,

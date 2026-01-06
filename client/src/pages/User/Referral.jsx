@@ -46,7 +46,7 @@ function Referral() {
     }
 
     try {
-      const response = await api.post("/api/send-referral", {
+      const response = await api.post("/send-referral", {
         referrerEmail: email,
         inviteeEmail: inviteeEmail,
       });

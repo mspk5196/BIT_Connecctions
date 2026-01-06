@@ -47,7 +47,9 @@ function ProfileView() {
           return;
         }
 
-        const response = await api.get(`/api/get-modification-history/${contactId}`);
+        const response = await api.get(
+          `/get-modification-history/${contactId}`
+        );
         const data = response.data;
 
         if (data.success && data.data) {
@@ -249,9 +251,9 @@ function ProfileView() {
                   level: "Postgraduate",
                   degree: contact.pg_course_name,
                   institution: `${contact.pg_college}, ${contact.pg_university}`,
-                  period: `${formatDate(
-                    contact.pg_from_date
-                  )} - ${formatDate(contact.pg_to_date)}`,
+                  period: `${formatDate(contact.pg_from_date)} - ${formatDate(
+                    contact.pg_to_date
+                  )}`,
                 },
               ]
             : []),
@@ -261,9 +263,9 @@ function ProfileView() {
                   level: "Undergraduate",
                   degree: contact.ug_course_name,
                   institution: `${contact.ug_college}, ${contact.ug_university}`,
-                  period: `${formatDate(
-                    contact.ug_from_date
-                  )} - ${formatDate(contact.ug_to_date)}`,
+                  period: `${formatDate(contact.ug_from_date)} - ${formatDate(
+                    contact.ug_to_date
+                  )}`,
                 },
               ]
             : []),
@@ -361,7 +363,9 @@ function ProfileView() {
                     <div
                       className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-sm bg-gradient-to-br ${
                         historyItem.type === "modification"
-                          ? getModificationTypeColor(historyItem.modificationType)
+                          ? getModificationTypeColor(
+                              historyItem.modificationType
+                            )
                           : getContactTypeColor(historyItem.type)
                       }`}
                     >
@@ -405,7 +409,9 @@ function ProfileView() {
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gradient-to-r ${
                             historyItem.type === "modification"
-                              ? getModificationTypeColor(historyItem.modificationType)
+                              ? getModificationTypeColor(
+                                  historyItem.modificationType
+                                )
                               : getContactTypeColor(historyItem.type)
                           }`}
                         >
@@ -440,9 +446,7 @@ function ProfileView() {
             onClick={handleCloseProfile}
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="font-medium text-sm md:text-base">
-              Back
-            </span>
+            <span className="font-medium text-sm md:text-base">Back</span>
           </button>
         </div>
 
@@ -604,12 +608,16 @@ function ProfileView() {
                           <div
                             className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg flex-shrink-0 shadow-sm bg-gradient-to-br ${
                               historyItem.type === "modification"
-                                ? getModificationTypeColor(historyItem.modificationType)
+                                ? getModificationTypeColor(
+                                    historyItem.modificationType
+                                  )
                                 : getContactTypeColor(historyItem.type)
                             }`}
                           >
                             {historyItem.type === "modification"
-                              ? getModificationTypeIcon(historyItem.modificationType)
+                              ? getModificationTypeIcon(
+                                  historyItem.modificationType
+                                )
                               : getContactTypeIcon(historyItem.type)}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -644,7 +652,8 @@ function ProfileView() {
                   className="w-full mt-6 py-3 text-center bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all duration-200 rounded-xl font-semibold text-indigo-700 border border-indigo-200 hover:border-indigo-300 flex items-center justify-center gap-2"
                 >
                   <Clock className="w-4 h-4" />
-                  View Complete Timeline ({combinedContactHistory.length} activities)
+                  View Complete Timeline ({combinedContactHistory.length}{" "}
+                  activities)
                 </button>
               </div>
             </div>
@@ -746,10 +755,12 @@ function ProfileView() {
                               {event.event_name}
                             </h3>
                             <p className="text-amber-700 font-medium mb-1">
-                              {event.event_role} • {event.event_held_organization}
+                              {event.event_role} •{" "}
+                              {event.event_held_organization}
                             </p>
                             <p className="text-gray-600 text-sm">
-                              {formatDate(event.event_date)} • {event.event_location}
+                              {formatDate(event.event_date)} •{" "}
+                              {event.event_location}
                             </p>
                             {event.verified && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">
@@ -795,17 +806,21 @@ function ProfileView() {
               </div>
               <div className="p-6">
                 <div className="space-y-4">
-                  {Object.entries(contactData.contactInfo).map(([key, value]) => (
-                    <div
-                      key={key}
-                      className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0"
-                    >
-                      <p className="text-sm text-gray-600 capitalize">
-                        {key.replace(/([A-Z])/g, " $1").trim()}
-                      </p>
-                      <p className="font-medium text-gray-900 text-right">{value}</p>
-                    </div>
-                  ))}
+                  {Object.entries(contactData.contactInfo).map(
+                    ([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0"
+                      >
+                        <p className="text-sm text-gray-600 capitalize">
+                          {key.replace(/([A-Z])/g, " $1").trim()}
+                        </p>
+                        <p className="font-medium text-gray-900 text-right">
+                          {value}
+                        </p>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -822,7 +837,9 @@ function ProfileView() {
                 <div className="p-6">
                   <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                     <div className="space-y-2 text-gray-700">
-                      <p className="font-medium">{contactData.address.street}</p>
+                      <p className="font-medium">
+                        {contactData.address.street}
+                      </p>
                       <p>
                         {contactData.address.city}, {contactData.address.state}
                       </p>

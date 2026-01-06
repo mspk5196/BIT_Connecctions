@@ -198,7 +198,7 @@ function ReferralSignup() {
     try {
       const tokenForRegistration = getReferralToken();
 
-      const response = await api.post("/api/complete-registration", {
+      const response = await api.post("/complete-registration", {
         token: tokenForRegistration,
         email: invitationData.inviteeEmail,
         password: password,

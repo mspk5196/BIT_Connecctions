@@ -69,8 +69,18 @@ function Applayout() {
   const { id, fetchMe, loading, isAuthenticated, clearAuth } = useAuthStore();
   const location = useLocation();
 
+  // Define public routes that don't require authentication
+  const publicRoutes = ["/login", "/register"];
+  const isPublicRoute = publicRoutes.includes(location.pathname);
+
   // Combined useEffect for authentication check and online status tracking
   useEffect(() => {
+    // Skip auth check for public routes
+    if (isPublicRoute) {
+      clearAuth(); // Clear any existing auth state
+      return;
+    }
+
     // Check authentication on app load with timeout
     const checkAuth = async () => {
       try {
@@ -90,7 +100,7 @@ function Applayout() {
     });
 
     return () => clearTimeout(timeoutId);
-  }, [fetchMe, clearAuth]);
+  }, [fetchMe, clearAuth, isPublicRoute]);
 
   // Online status tracking - ping server every 10 seconds
   useEffect(() => {
@@ -99,7 +109,7 @@ function Applayout() {
     const pingInterval = setInterval(async () => {
       if (navigator.onLine) {
         try {
-          await api.post(`/api/user/ping/${id}`);
+          await api.post(`/user/ping/${id}`);
         } catch (error) {
           console.error("Ping failed:", error);
         }

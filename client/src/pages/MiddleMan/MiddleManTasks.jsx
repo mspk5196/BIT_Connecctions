@@ -162,18 +162,21 @@ const TasksPage = () => {
           const response = await api.get(
             `/api/get-tasks/?category=${category}`
           );
-          
+
           console.log("API Response:", response.data);
-          
+
           // Map tasks to include status field based on task_completion
-          const mappedTasks = (response.data.data || []).map(task => ({
+          const mappedTasks = (response.data.data || []).map((task) => ({
             ...task,
-            status: task.task_completion ? "completed" : "pending"
+            status: task.task_completion ? "completed" : "pending",
           }));
-          
+
           console.log("Mapped tasks:", mappedTasks);
-          console.log("Completed tasks count:", mappedTasks.filter(t => t.status === "completed").length);
-          
+          console.log(
+            "Completed tasks count:",
+            mappedTasks.filter((t) => t.status === "completed").length
+          );
+
           setTasks(mappedTasks);
           setTaskStats(
             response.data.stats || { total: 0, completed: 0, pending: 0 }
@@ -201,7 +204,7 @@ const TasksPage = () => {
     try {
       const taskToComplete = tasks.find((task) => task.id === taskId);
 
-      const response = await api.put(`/api/complete-task/${taskId}`, {
+      const response = await api.put(`/complete-task/${taskId}`, {
         modified_by: id,
       });
 
@@ -261,11 +264,15 @@ const TasksPage = () => {
     const isCompleted = task.status === "completed";
 
     const matchesFilter =
-      filterType === "All" ? !isCompleted : // Show only pending tasks by default
-      filterType === "Completed" ? isCompleted : // Show only completed tasks
-      filterType === "Assigned" ? !isCompleted && task.task_type === "assigned" :
-      filterType === "Automated" ? !isCompleted && task.task_type === "automated" :
-      false;
+      filterType === "All"
+        ? !isCompleted // Show only pending tasks by default
+        : filterType === "Completed"
+        ? isCompleted // Show only completed tasks
+        : filterType === "Assigned"
+        ? !isCompleted && task.task_type === "assigned"
+        : filterType === "Automated"
+        ? !isCompleted && task.task_type === "automated"
+        : false;
 
     return matchesSearch && matchesFilter;
   });
@@ -331,121 +338,127 @@ const TasksPage = () => {
 
   const TaskCard = ({ task }) => {
     const isCompleted = task.status === "completed";
-    
-    return (
-    <div className={`bg-white rounded-xl border p-6 hover:shadow-lg transition-all duration-200 min-w-0 ${
-      isCompleted ? 'border-green-300 bg-green-50/30' : 'border-gray-200 hover:border-gray-300'
-    }`}>
-      <div className="flex items-start justify-between mb-4 min-w-0">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-gray-900 text-lg line-clamp-1 truncate min-w-0 flex-1">
-              {task.task_title}
-            </h3>
-            {task.contact_id && (
-              <button
-                onClick={() => navigateToContactProfile(task.contact_id)}
-                className="ml-2 p-1 text-gray-400 hover:text-blue-600 transition-colors rounded-full hover:bg-blue-50"
-                title={`View profile of ${task.assigned_to_name || "Contact"}`}
-              >
-                <ExternalLink size={16} />
-              </button>
-            )}
-          </div>
 
-          {task.assigned_to_name && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm text-gray-600">
-                Assigned to:{" "}
-                <span className="font-medium text-gray-800">
-                  {task.assigned_to_name}
+    return (
+      <div
+        className={`bg-white rounded-xl border p-6 hover:shadow-lg transition-all duration-200 min-w-0 ${
+          isCompleted
+            ? "border-green-300 bg-green-50/30"
+            : "border-gray-200 hover:border-gray-300"
+        }`}
+      >
+        <div className="flex items-start justify-between mb-4 min-w-0">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-gray-900 text-lg line-clamp-1 truncate min-w-0 flex-1">
+                {task.task_title}
+              </h3>
+              {task.contact_id && (
+                <button
+                  onClick={() => navigateToContactProfile(task.contact_id)}
+                  className="ml-2 p-1 text-gray-400 hover:text-blue-600 transition-colors rounded-full hover:bg-blue-50"
+                  title={`View profile of ${
+                    task.assigned_to_name || "Contact"
+                  }`}
+                >
+                  <ExternalLink size={16} />
+                </button>
+              )}
+            </div>
+
+            {task.assigned_to_name && (
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm text-gray-600">
+                  Assigned to:{" "}
+                  <span className="font-medium text-gray-800">
+                    {task.assigned_to_name}
+                  </span>
                 </span>
+                {task.assigned_to_email && (
+                  <span className="text-xs text-gray-500">
+                    ({task.assigned_to_email})
+                  </span>
+                )}
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 mb-3">
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  task.task_type === "assigned"
+                    ? "bg-blue-100 text-blue-700"
+                    : task.task_type === "automated"
+                    ? "bg-purple-100 text-purple-700"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                {task.task_type === "assigned"
+                  ? "👤 Assigned"
+                  : task.task_type === "automated"
+                  ? "🤖 Automated"
+                  : `📋 ${task.task_type}`}
               </span>
-              {task.assigned_to_email && (
-                <span className="text-xs text-gray-500">
-                  ({task.assigned_to_email})
+              {isCompleted && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  ✓ Completed
                 </span>
               )}
             </div>
-          )}
 
-          <div className="flex items-center gap-3 mb-3">
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                task.task_type === "assigned"
-                  ? "bg-blue-100 text-blue-700"
-                  : task.task_type === "automated"
-                  ? "bg-purple-100 text-purple-700"
-                  : "bg-gray-100 text-gray-700"
-              }`}
-            >
-              {task.task_type === "assigned"
-                ? "👤 Assigned"
-                : task.task_type === "automated"
-                ? "🤖 Automated"
-                : `📋 ${task.task_type}`}
-            </span>
-            {isCompleted && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                ✓ Completed
+            <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+              <span className="flex items-center gap-1 bg-green-100 rounded-2xl p-1">
+                <Calendar size={14} />
+                Assigned: {formatDate(task.created_at)}
               </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-            <span className="flex items-center gap-1 bg-green-100 rounded-2xl p-1">
-              <Calendar size={14} />
-              Assigned: {formatDate(task.created_at)}
-            </span>
-            <span
-              className={`flex items-center gap-1 ${getDueDateColor(
-                task.task_deadline,
-                "pending"
-              )} bg-red-100 rounded-2xl p-1`}
-            >
-              <Clock size={14} />
-              Due: {formatDate(task.task_deadline)}
-            </span>
+              <span
+                className={`flex items-center gap-1 ${getDueDateColor(
+                  task.task_deadline,
+                  "pending"
+                )} bg-red-100 rounded-2xl p-1`}
+              >
+                <Clock size={14} />
+                Due: {formatDate(task.task_deadline)}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex h-19 flex-1">
-        <p
-          className="text-gray-600 text-sm mb-4 min-w-0"
-          style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "normal",
-            maxHeight: "2.8em",
-          }}
-        >
-          {task.task_description}
-        </p>
-      </div>
-
-      <div className="flex gap-2">
-        <button
-          onClick={() => handleViewDetails(task)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          <Eye size={16} />
-          View Details
-        </button>
-        {!isCompleted && (
-          <button
-            onClick={() => handleCompleteTask(task.id)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+        <div className="flex h-19 flex-1">
+          <p
+            className="text-gray-600 text-sm mb-4 min-w-0"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "normal",
+              maxHeight: "2.8em",
+            }}
           >
-            <CheckCircle2 size={16} />
-            Complete
+            {task.task_description}
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleViewDetails(task)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <Eye size={16} />
+            View Details
           </button>
-        )}
+          {!isCompleted && (
+            <button
+              onClick={() => handleCompleteTask(task.id)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <CheckCircle2 size={16} />
+              Complete
+            </button>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
   };
 
   return (
@@ -684,12 +697,14 @@ const TasksPage = () => {
                     Complete Task
                   </button>
                 )}
-                {selectedTask.status === "completed" && selectedTask.updated_at && (
-                  <div className="flex items-center gap-2 px-6 py-3 bg-green-100 text-green-700 rounded-lg font-medium">
-                    <CheckCircle2 size={18} />
-                    Completed on {new Date(selectedTask.updated_at).toLocaleDateString()}
-                  </div>
-                )}
+                {selectedTask.status === "completed" &&
+                  selectedTask.updated_at && (
+                    <div className="flex items-center gap-2 px-6 py-3 bg-green-100 text-green-700 rounded-lg font-medium">
+                      <CheckCircle2 size={18} />
+                      Completed on{" "}
+                      {new Date(selectedTask.updated_at).toLocaleDateString()}
+                    </div>
+                  )}
                 <button
                   onClick={closeModal}
                   className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"

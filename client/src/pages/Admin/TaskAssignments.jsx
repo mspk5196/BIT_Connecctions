@@ -72,7 +72,7 @@ function TaskAssignments() {
   const getTasks = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/api/get-tasks?category=${role}`);
+      const response = await api.get(`/get-tasks?category=${role}`);
       setData(response.data.data);
       setStats(response.data.stats);
 
@@ -84,9 +84,12 @@ function TaskAssignments() {
           manual: response.data.adminData.manualTasks || [],
           automated: response.data.adminData.automatedTasks || [],
         });
-        
+
         // Calculate category stats from all admin data
-        calculateCategoryStats(response.data.adminData.totalTasks || [], response.data.adminData);
+        calculateCategoryStats(
+          response.data.adminData.totalTasks || [],
+          response.data.adminData
+        );
       } else {
         setAllTasks({
           pending: response.data.data || [],
@@ -101,7 +104,7 @@ function TaskAssignments() {
             (task) => task.task_completion === true
           ),
         });
-        
+
         // Calculate category stats from user data
         calculateCategoryStats(response.data.data || []);
       }
@@ -116,47 +119,48 @@ function TaskAssignments() {
   };
 
   const calculateCategoryStats = (tasks, adminData = null) => {
-    const categories = ['A', 'B', 'C'];
+    const categories = ["A", "B", "C"];
     const categoryPerformance = {};
 
-    categories.forEach(category => {
+    categories.forEach((category) => {
       let allCategoryTasks = [];
-      
+
       if (role === "admin" && adminData) {
         // For admin, combine all tasks from different sources
         const allAdminTasks = [
           ...(adminData.pendingTasks || []),
           ...(adminData.completedTasks || []),
-          ...(adminData.totalTasks || [])
+          ...(adminData.totalTasks || []),
         ];
-        
+
         // Remove duplicates based on task_id
         const uniqueTasks = allAdminTasks.reduce((acc, task) => {
           const taskId = task.task_id || task.id;
-          if (!acc.some(t => (t.task_id || t.id) === taskId)) {
+          if (!acc.some((t) => (t.task_id || t.id) === taskId)) {
             acc.push(task);
           }
           return acc;
         }, []);
-        
-        allCategoryTasks = uniqueTasks.filter(task => 
-          task.task_assigned_category === category
+
+        allCategoryTasks = uniqueTasks.filter(
+          (task) => task.task_assigned_category === category
         );
       } else {
         // For regular users, use the tasks data
-        allCategoryTasks = (tasks || []).filter(task => 
-          task.task_assigned_category === category
+        allCategoryTasks = (tasks || []).filter(
+          (task) => task.task_assigned_category === category
         );
       }
 
-      const completedTasks = allCategoryTasks.filter(task => 
-        task.task_completion === true || task.task_completion === 1
+      const completedTasks = allCategoryTasks.filter(
+        (task) => task.task_completion === true || task.task_completion === 1
       );
-      
+
       const totalTasks = allCategoryTasks.length;
       const completedCount = completedTasks.length;
       const pendingCount = totalTasks - completedCount;
-      const completionPercentage = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
+      const completionPercentage =
+        totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
 
       categoryPerformance[category] = {
         total: totalTasks,
@@ -175,7 +179,7 @@ function TaskAssignments() {
     try {
       setIsSubmitting(true);
       console.log("Creating task with data:", taskData);
-      await api.post("/api/create-task", taskData);
+      await api.post("/create-task", taskData);
       setShowCreateForm(false);
       showAlert("success", "Task created successfully");
       getTasks();
@@ -190,24 +194,24 @@ function TaskAssignments() {
   const updateTask = async (taskData) => {
     try {
       setIsSubmitting(true);
-      
+
       console.log("🔧 Editing task:", editingTask);
       console.log("🔧 Update data:", taskData);
-      
+
       // Handle different possible ID field names
       const taskId = editingTask.task_id || editingTask.id || editingTask._id;
-      
+
       console.log("🔧 Using task ID:", taskId);
-      
+
       if (!taskId) {
         console.error("❌ No task ID found in editingTask:", editingTask);
         showAlert("error", "Task ID not found");
         return;
       }
-      
-      const response = await api.put(`/api/update-task/${taskId}`, taskData);
+
+      const response = await api.put(`/update-task/${taskId}`, taskData);
       console.log("🔧 Update response:", response.data);
-      
+
       setShowEditForm(false);
       setEditingTask(null);
       showAlert("success", "Task updated successfully");
@@ -224,16 +228,17 @@ function TaskAssignments() {
   const deleteTask = async () => {
     try {
       setIsDeleting(true);
-      
+
       // Handle different possible ID field names
-      const taskId = deletingTask.task_id || deletingTask.id || deletingTask._id;
-      
+      const taskId =
+        deletingTask.task_id || deletingTask.id || deletingTask._id;
+
       if (!taskId) {
         showAlert("error", "Task ID not found");
         return;
       }
-      
-      await api.delete(`/api/delete-task/${taskId}`);
+
+      await api.delete(`/delete-task/${taskId}`);
       setShowDeleteConfirm(false);
       setDeletingTask(null);
       showAlert("success", "Task deleted successfully");
@@ -366,7 +371,7 @@ function TaskAssignments() {
           </div>
 
           {/* Stats Cards Component */}
-          <TaskStatsCards 
+          <TaskStatsCards
             stats={stats}
             categoryStats={categoryStats}
             activeFilter={activeFilter}
@@ -428,7 +433,8 @@ function TaskAssignments() {
                         {getCurrentTasks().map((task, index) => {
                           const priority = getTaskPriority(task.task_deadline);
                           const isCompleted = task.task_completion;
-                          const showActions = !isCompleted && activeFilter !== "completed";
+                          const showActions =
+                            !isCompleted && activeFilter !== "completed";
 
                           return (
                             <div
@@ -449,14 +455,18 @@ function TaskAssignments() {
                                       {showActions && (
                                         <div className="flex gap-2 flex-shrink-0">
                                           <button
-                                            onClick={() => handleEditClick(task)}
+                                            onClick={() =>
+                                              handleEditClick(task)
+                                            }
                                             className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-colors duration-200"
                                             title="Edit Task"
                                           >
                                             <Edit className="w-4 h-4" />
                                           </button>
                                           <button
-                                            onClick={() => handleDeleteClick(task)}
+                                            onClick={() =>
+                                              handleDeleteClick(task)
+                                            }
                                             className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg transition-colors duration-200"
                                             title="Delete Task"
                                           >
@@ -480,7 +490,9 @@ function TaskAssignments() {
                                             : "bg-gray-100 text-gray-800"
                                         }`}
                                       >
-                                        {task.task_type === "assigned" ? "Manual" : "Automated"}
+                                        {task.task_type === "assigned"
+                                          ? "Manual"
+                                          : "Automated"}
                                       </span>
                                       {task.task_completion && (
                                         <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 whitespace-nowrap">
@@ -502,7 +514,11 @@ function TaskAssignments() {
                                     <div className="flex items-center gap-1 whitespace-nowrap">
                                       <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                                       <span>
-                                        Due: {format(parseISO(task.task_deadline), "PPP")}
+                                        Due:{" "}
+                                        {format(
+                                          parseISO(task.task_deadline),
+                                          "PPP"
+                                        )}
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-1">

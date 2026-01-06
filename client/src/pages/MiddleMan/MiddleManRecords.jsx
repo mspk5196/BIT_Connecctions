@@ -46,7 +46,7 @@ function MiddleManRecords() {
 
   const handleSelectUnverifiedVisitingCards = async () => {
     try {
-      const response = await api.get(`/api/get-unverified-images/`);
+      const response = await api.get(`/get-unverified-images/`);
       console.log("Visiting cards fetched successfully:", response.data.data);
       setVisitingCard(response.data.data || []);
     } catch (error) {
@@ -58,7 +58,7 @@ function MiddleManRecords() {
   const handleSelectAssignedByUser = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/api/get-assigned-to/${id}`);
+      const response = await api.get(`/get-assigned-to/${id}`);
       console.log("Assigned by user data fetched successfully:", response.data);
       setAssignedByUserData(response.data);
     } catch (error) {
@@ -285,28 +285,31 @@ function MiddleManRecords() {
               <div className="flex gap-2  pb-2">
                 <button
                   onClick={() => setActiveView("formData")}
-                  className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeView === "formData"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-                    }`}
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                    activeView === "formData"
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+                  }`}
                 >
                   Form Data
                 </button>
                 <button
                   onClick={() => setActiveView("visitingCards")}
-                  className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeView === "visitingCards"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-                    }`}
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                    activeView === "visitingCards"
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+                  }`}
                 >
                   Cards
                 </button>
                 <button
                   onClick={() => setActiveView("AssignedToUser")}
-                  className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeView === "AssignedToUser"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-                    }`}
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                    activeView === "AssignedToUser"
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+                  }`}
                 >
                   Assigned
                 </button>
@@ -317,28 +320,31 @@ function MiddleManRecords() {
             <div className="hidden sm:flex gap-4">
               <button
                 onClick={() => setActiveView("formData")}
-                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${activeView === "formData"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-                  }`}
+                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  activeView === "formData"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+                }`}
               >
                 Form Data
               </button>
               <button
                 onClick={() => setActiveView("visitingCards")}
-                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${activeView === "visitingCards"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-                  }`}
+                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  activeView === "visitingCards"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+                }`}
               >
                 Visiting Cards
               </button>
               <button
                 onClick={() => setActiveView("AssignedToUser")}
-                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${activeView === "AssignedToUser"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-                  }`}
+                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  activeView === "AssignedToUser"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+                }`}
               >
                 Assigned By Me
               </button>
@@ -434,10 +440,9 @@ function MiddleManRecords() {
                         {/* Image with overlay buttons - always visible on mobile, hover on desktop */}
                         <div className="relative">
                           <img
-                            src={`${import.meta.env.VITE_BASE_URL}/${card.file_path.replace(
-                              /\\/g,
-                              "/"
-                            )}`}
+                            src={`${
+                              import.meta.env.VITE_BASE_URL
+                            }/${card.file_path.replace(/\\/g, "/")}`}
                             alt={`Visiting Card ${card.id}`}
                             className="w-full h-32 sm:h-48 object-cover"
                           />
@@ -605,7 +610,8 @@ function MiddleManRecords() {
                         You still not completed their update
                       </span>
                       <span className="text-sm inline sm:hidden">
-                        {assignedByUserData.length !== 1 ? "s" : ""} not completed their update
+                        {assignedByUserData.length !== 1 ? "s" : ""} not
+                        completed their update
                       </span>
                     </span>
                   </div>
@@ -670,9 +676,9 @@ function MiddleManRecords() {
                       assignedOn={
                         participant.assigned_on
                           ? format(
-                            parseISO(participant.assigned_on),
-                            "MMMM dd, yyyy"
-                          )
+                              parseISO(participant.assigned_on),
+                              "MMMM dd, yyyy"
+                            )
                           : "N/A"
                       }
                     />

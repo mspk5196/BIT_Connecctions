@@ -12,14 +12,18 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Define public routes that should not trigger redirects
+    const publicRoutes = ['/bitconnections/login', '/bitconnections/register'];
+    const currentPath = window.location.pathname;
+    
     // Handle authentication errors - but only redirect for auth-related endpoints
     if (error.response?.status === 401) {
-      // 401 usually means token expired or invalid - always redirect
+      // 401 usually means token expired or invalid
       const { clearAuth } = useAuthStore.getState();
       clearAuth();
 
-      // Only redirect if not already on login page
-      if (window.location.pathname !== "/bitconnections/login") {
+      // Don't redirect if already on a public route
+      if (!publicRoutes.includes(currentPath)) {
         window.location.href = "/bitconnections/login";
       }
     } else if (error.response?.status === 403) {
@@ -31,7 +35,8 @@ api.interceptors.response.use(
         const { clearAuth } = useAuthStore.getState();
         clearAuth();
 
-        if (window.location.pathname !== "/bitconnections/login") {
+        // Don't redirect if already on a public route
+        if (!publicRoutes.includes(currentPath)) {
           window.location.href = "/bitconnections/login";
         }
       }

@@ -24,7 +24,7 @@ const RecentEventsTimeline = () => {
   useEffect(() => {
     const fetchModificationHistory = async () => {
       try {
-        const response = await api.get("/api/get-all-modification-history/");
+        const response = await api.get("/get-all-modification-history/");
         const data = response.data;
 
         if (data.success && data.data) {
@@ -131,8 +131,7 @@ const RecentEventsTimeline = () => {
       created_at: item.created_at,
     })),
     // Add recent contact addition
-  ]
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   // Full History Modal Component
   const FullHistoryModal = () => (
