@@ -942,7 +942,7 @@ const MiddleManHome = () => {
       );
 
       await api.delete(
-        `/api/verified-contact-delete/${contactToDelete.contact_id}?userType=${role}&eventId=${id}`
+        `/verified-contact-delete/${contactToDelete.contact_id}?userType=${role}&eventId=${id}`
       );
 
       console.log("Delete successful, updating state");
