@@ -13,10 +13,7 @@ RUN npm install
 COPY . .
 
 # Expose port
-EXPOSE 5002
+EXPOSE 5000
 
-# Health check – check the /health endpoint inside the container
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://127.0.0.1:5002/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
 # Run the application
 CMD ["node", "server.js"]
