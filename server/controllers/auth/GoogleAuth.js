@@ -29,6 +29,18 @@ export const verifyGoogleToken = async (req, res) => {
   try {
     const { credential } = req.body;
 
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: "No credential provided",
+      });
+    }
+
+    console.log(
+      "Verifying Google token for client ID:",
+      process.env.GOOGLE_CLIENT_ID
+    );
+
     // Verify the Google ID token
     const ticket = await client.verifyIdToken({
       idToken: credential,
@@ -53,7 +65,7 @@ export const verifyGoogleToken = async (req, res) => {
         const processedUrl = picture
           .replace(/=s\d+-c$/, "=s200-c")
           .replace(/=s\d+$/, "=s200");
-        
+
         // Basic URL validation - ensure it's a valid Google profile picture URL
         if (
           processedUrl.includes("googleusercontent.com") &&
@@ -143,8 +155,8 @@ export const verifyGoogleToken = async (req, res) => {
     // Set token as httpOnly cookie (same as normal login)
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Same as normal login
-      sameSite: "Strict",
+      secure: true, // Always secure in production (HTTPS)
+      sameSite: "Lax", // Changed from Strict to Lax for OAuth compatibility
       maxAge: 3600000, // 1 hour to match JWT expiration
     });
 
@@ -163,9 +175,16 @@ export const verifyGoogleToken = async (req, res) => {
     });
   } catch (error) {
     console.error("Google token verification failed:", error);
+    console.error("Error details:", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+    });
+
     res.status(400).json({
       success: false,
-      message: "Invalid Google token",
+      message: error.message || "Invalid Google token",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
