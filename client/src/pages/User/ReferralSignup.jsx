@@ -72,7 +72,7 @@ function ReferralSignup() {
               token: referralToken,
             })
             .catch((error) => {
-              console.log("Heartbeat failed:", error);
+              // console.log("Heartbeat failed:", error);
             });
         }
       }, 30000);

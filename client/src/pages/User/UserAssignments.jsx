@@ -143,10 +143,10 @@ function UserAssignments() {
     try {
       setLoading(true);
       const response = await api.get(`/contact/get-assignment/${id}`);
-      console.log("User assignments fetched successfully:", response.data);
+      // console.log("User assignments fetched successfully:", response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching user assignments:", error);
+      // console.error("Error fetching user assignments:", error);
       showAlert("error", "Failed to fetch assignments. Please try again.");
     } finally {
       setLoading(false);
@@ -182,7 +182,7 @@ function UserAssignments() {
   const onAdd = async (contact_id) => {
     try {
       const user = data.find((user) => user.contact_id === contact_id);
-      console.log("Adding user:", user);
+      // console.log("Adding user:", user);
       if (user) {
         navigate("/details-input", {
           state: {
@@ -199,7 +199,7 @@ function UserAssignments() {
       }
     } catch (error) {
       showAlert("error", "Failed to load user data for adding.");
-      console.log("Error loading user for add", error);
+      // console.log("Error loading user for add", error);
     }
   };
   const handleDeleteClick = (contact_id) => {
@@ -253,7 +253,7 @@ function UserAssignments() {
         setUserToDelete(null);
       } catch (error) {
         showAlert("error", "Failed to delete. Please try again.");
-        console.log("Error deleting:", error);
+        // console.log("Error deleting:", error);
       } finally {
         setIsDeleting(false);
       }

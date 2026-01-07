@@ -252,10 +252,12 @@ const DetailsPanel = ({ selectedNode, generateDefaultAvatar }) => {
                     alt={selectedNode.name}
                     className="selected-avatar-img"
                     onError={(e) => {
-                      console.log('Details panel avatar failed, using fallback');
+                      // console.log('Details panel avatar failed, using fallback');
                       e.target.src = generateDefaultAvatar(selectedNode.name, selectedNode.email);
                     }}
-                    onLoad={() => console.log('Details panel avatar loaded successfully')}
+                    onLoad={() => {
+                      // console.log('Details panel avatar loaded successfully');
+                    }}
                   />
                   {selectedNode.nodeData?.is_online !== undefined && (
                     <div className={`online-indicator ${selectedNode.nodeData.is_online ? 'online' : 'offline'}`}>

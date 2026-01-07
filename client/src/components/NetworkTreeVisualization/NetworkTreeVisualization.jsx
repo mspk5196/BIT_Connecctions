@@ -64,7 +64,7 @@ const NetworkTreeVisualization = ({ networkData, searchTerm, filterType }) => {
   const convertToTreeFormat = useCallback((data) => {
     if (!data?.networkData?.nodes?.length) return null;
 
-    console.log(`Converting ${data.networkData.nodes.length} nodes to tree format...`);
+    // console.log(`Converting ${data.networkData.nodes.length} nodes to tree format...`);
     const startTime = performance.now();
 
     const nodes = data.networkData.nodes;
@@ -152,7 +152,7 @@ const NetworkTreeVisualization = ({ networkData, searchTerm, filterType }) => {
     }
 
     const endTime = performance.now();
-    console.log(`Tree conversion completed in ${endTime - startTime}ms`);
+    // console.log(`Tree conversion completed in ${endTime - startTime}ms`);
 
     return result;
   }, [canvasRef]);
@@ -270,7 +270,7 @@ const NetworkTreeVisualization = ({ networkData, searchTerm, filterType }) => {
         y: svgPoint.y - nodePos.y
       });
 
-      console.log('Started dragging node:', node.name);
+      // console.log('Started dragging node:', node.name);
     } else {
       selectNode(node, e);
     }
@@ -295,7 +295,7 @@ const NetworkTreeVisualization = ({ networkData, searchTerm, filterType }) => {
 
   const handleNodeMouseUp = useCallback(() => {
     if (isDraggingNode) {
-      console.log('Finished dragging node:', draggedNode?.name);
+      // console.log('Finished dragging node:', draggedNode?.name);
       setIsDraggingNode(false);
       setDraggedNode(null);
       setNodeDragStart({ x: 0, y: 0 });
@@ -381,7 +381,7 @@ const NetworkTreeVisualization = ({ networkData, searchTerm, filterType }) => {
       if (!didDrag && node && initialTouch) {
         const timeDiff = Date.now() - initialTouch.time;
         if (timeDiff < 300) {
-          console.log('Mobile tap detected, selecting node:', node.name);
+          // console.log('Mobile tap detected, selecting node:', node.name);
           selectNode(node, e);
         }
       }
@@ -570,19 +570,19 @@ const NetworkTreeVisualization = ({ networkData, searchTerm, filterType }) => {
     if (e) {
       e.stopPropagation();
     }
-    console.log('Node selected:', node.name);
+    // console.log('Node selected:', node.name);
     setSelectedNode(node);
   }, [setSelectedNode]);
 
   const handleAvatarError = useCallback((e, node) => {
-    console.log('Avatar error for:', node.name);
+    // console.log('Avatar error for:', node.name);
     e.target.src = TreeUtils.generateDefaultAvatar(node.name, node.email);
   }, []);
 
   // OPTIMIZED: Advanced viewport culling for large datasets (10k+ nodes)
   const { nodes: visibleNodes, connections } = useMemo(() => {
     const startTime = performance.now();
-    console.log('Calculating visible nodes for large dataset...');
+    // console.log('Calculating visible nodes for large dataset...');
     
     if (!treeData) return { nodes: [], connections: [] };
 
@@ -661,7 +661,7 @@ const NetworkTreeVisualization = ({ networkData, searchTerm, filterType }) => {
     const result = getVisibleNodes(treeData);
     
     const endTime = performance.now();
-    console.log(`Viewport culling: ${result.nodes.length} visible nodes, ${result.connections.length} connections (${endTime - startTime}ms)`);
+    // console.log(`Viewport culling: ${result.nodes.length} visible nodes, ${result.connections.length} connections (${endTime - startTime}ms)`);
     
     return result;
   }, [treeData, expandedNodes, pan, zoom, getNodePosition]); // Include viewport dependencies
@@ -669,14 +669,14 @@ const NetworkTreeVisualization = ({ networkData, searchTerm, filterType }) => {
   // Performance monitoring
   useEffect(() => {
     if (visibleNodes.length > 0) {
-      console.log(`Rendering ${visibleNodes.length} nodes, ${connections.length} connections`);
+      // console.log(`Rendering ${visibleNodes.length} nodes, ${connections.length} connections`);
       
       const startTime = performance.now();
       
       // Monitor render time
       const timer = setTimeout(() => {
         const endTime = performance.now();
-        console.log(`Render took ${endTime - startTime} milliseconds`);
+        // console.log(`Render took ${endTime - startTime} milliseconds`);
       }, 0);
       
       return () => clearTimeout(timer);
@@ -702,7 +702,7 @@ const NetworkTreeVisualization = ({ networkData, searchTerm, filterType }) => {
         );
 
         if (imageUrls.length > 0) {
-          console.log(`Priming cache for ${Math.min(imageUrls.length, 50)} images out of ${imageUrls.length} total`);
+          // console.log(`Priming cache for ${Math.min(imageUrls.length, 50)} images out of ${imageUrls.length} total`);
           primeImageCache(imageUrls);
 
           // Reduced delay for large datasets

@@ -34,8 +34,8 @@ function ProfileView() {
 
   // Access the state object passed during navigation
   const contact = location.state || {};
-  console.log(contact);
-  console.log("education", contact.education);
+  // console.log(contact);
+  // console.log("education", contact.education);
 
   // Fetch modification history from API
   useEffect(() => {
@@ -56,7 +56,7 @@ function ProfileView() {
           setModificationHistory(data.data);
         }
       } catch (error) {
-        console.error("Failed to fetch modification history:", error);
+        // console.error("Failed to fetch modification history:", error);
       } finally {
         setIsLoadingHistory(false);
       }

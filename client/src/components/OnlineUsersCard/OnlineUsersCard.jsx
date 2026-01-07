@@ -23,7 +23,7 @@ const OnlineUsersCard = () => {
 
       setLoading(false);
     } catch (error) {
-      console.error("Failed to fetch online users:", error);
+      // console.error("Failed to fetch online users:", error);
       setLoading(false);
     }
   };

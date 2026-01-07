@@ -45,14 +45,14 @@ function EventDetails() {
   // Click outside handler to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.autocomplete-container')) {
+      if (!event.target.closest(".autocomplete-container")) {
         setShowEventSuggestions(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -77,7 +77,7 @@ function EventDetails() {
       const stored = localStorage.getItem(`recent-events-${id}`);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error("Error loading recent events:", error);
+      // console.error("Error loading recent events:", error);
       return [];
     }
   };
@@ -85,16 +85,16 @@ function EventDetails() {
   const saveRecentEvent = (eventData) => {
     try {
       const existing = getRecentEvents();
-      
+
       // Create a unique key for each event based on all fields
       const eventKey = `${eventData.eventName}-${eventData.eventHeldOrganization}-${eventData.eventLocation}`;
-      
+
       // Remove if already exists to avoid duplicates
-      const filtered = existing.filter(event => {
+      const filtered = existing.filter((event) => {
         const existingKey = `${event.eventName}-${event.eventHeldOrganization}-${event.eventLocation}`;
         return existingKey !== eventKey;
       });
-      
+
       // Convert to the format we used in FormInput (with underscores for consistency)
       const eventToStore = {
         event_name: eventData.eventName,
@@ -103,38 +103,40 @@ function EventDetails() {
         event_held_organization: eventData.eventHeldOrganization,
         event_location: eventData.eventLocation,
       };
-      
+
       // Add to beginning of array
       const updated = [eventToStore, ...filtered].slice(0, 10); // Keep only 10 most recent
-      
+
       localStorage.setItem(`recent-events-${id}`, JSON.stringify(updated));
     } catch (error) {
-      console.error("Error saving recent event:", error);
+      // console.error("Error loading recent events:", error);
     }
   };
 
   const getEventSuggestions = (query, fieldName) => {
     const recentEvents = getRecentEvents();
-    
+
     if (!query || query.length < 1) return [];
-    
+
     // Map camelCase field names to underscore format for consistency
     const fieldMap = {
-      eventName: 'event_name',
-      eventHeldOrganization: 'event_held_organization',
-      eventLocation: 'event_location'
+      eventName: "event_name",
+      eventHeldOrganization: "event_held_organization",
+      eventLocation: "event_location",
     };
-    
+
     const mappedFieldName = fieldMap[fieldName] || fieldName;
-    
+
     return recentEvents
-      .filter(event => {
+      .filter((event) => {
         const fieldValue = event[mappedFieldName];
-        return fieldValue && fieldValue.toLowerCase().includes(query.toLowerCase());
+        return (
+          fieldValue && fieldValue.toLowerCase().includes(query.toLowerCase())
+        );
       })
-      .map(event => ({
+      .map((event) => ({
         ...event,
-        matchedField: mappedFieldName
+        matchedField: mappedFieldName,
       }))
       .slice(0, 5); // Show max 5 suggestions
   };
@@ -166,7 +168,11 @@ function EventDetails() {
     }));
 
     // Handle event field autocomplete
-    const eventAutocompleteFields = ["eventName", "eventHeldOrganization", "eventLocation"];
+    const eventAutocompleteFields = [
+      "eventName",
+      "eventHeldOrganization",
+      "eventLocation",
+    ];
     if (eventAutocompleteFields.includes(name) && value.trim().length > 0) {
       const suggestions = getEventSuggestions(value, name);
       setEventSuggestions(suggestions);
@@ -210,19 +216,19 @@ function EventDetails() {
       formData.append("eventHeldOrganization", eventData.eventHeldOrganization);
       formData.append("eventLocation", eventData.eventLocation);
 
-      const res = await api.post(
-        "/contact/upload-contact",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const res = await api.post("/contact/upload-contact", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      console.log("Event save success:", res.data);
+      // console.log("Event save success:", res.data);
       showAlert("success", "Event details have been successfully saved.");
 
       // Save event to recent events for future autocomplete
-      if (eventData.eventName && eventData.eventHeldOrganization && eventData.eventLocation) {
+      if (
+        eventData.eventName &&
+        eventData.eventHeldOrganization &&
+        eventData.eventLocation
+      ) {
         saveRecentEvent(eventData);
       }
 
@@ -231,7 +237,7 @@ function EventDetails() {
         navigate("/");
       }, 2000);
     } catch (err) {
-      console.error("Event save failed:", err);
+      // console.error("Event save failed:", err);
       showAlert("error", "Failed to save event details.");
     } finally {
       setLoading(false);

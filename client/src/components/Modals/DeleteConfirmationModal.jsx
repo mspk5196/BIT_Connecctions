@@ -14,7 +14,7 @@ const DeleteConfirmationModal = ({
   const handleConfirm = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Modal confirm button clicked");
+    // console.log("Modal confirm button clicked");
     onConfirm();
   };
 
@@ -22,7 +22,7 @@ const DeleteConfirmationModal = ({
   const handleCancel = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Modal cancel button clicked");
+    // console.log("Modal cancel button clicked");
     onCancel();
   };
 

@@ -24,7 +24,7 @@ export const TreeUtils = {
 
   // Get avatar URL
   getAvatarUrl: (node) => {
-    console.log('Getting avatar for node:', node.name, 'Profile picture:', node.profile_picture || node.nodeData?.profile_picture);
+    // console.log('Getting avatar for node:', node.name, 'Profile picture:', node.profile_picture || node.nodeData?.profile_picture);
 
     if (node.type === 'user') {
       let profilePicture = node.profile_picture;
@@ -37,13 +37,13 @@ export const TreeUtils = {
         const cleanUrl = profilePicture.trim().replace(/^\[|\]$/g, '');
 
         if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-          console.log('Using profile picture:', cleanUrl);
+          // console.log('Using profile picture:', cleanUrl);
           return cleanUrl;
         }
       }
     }
 
-    console.log('Using default avatar for:', node.name);
+    // console.log('Using default avatar for:', node.name);
     return TreeUtils.generateDefaultAvatar(node.name, node.email);
   },
 

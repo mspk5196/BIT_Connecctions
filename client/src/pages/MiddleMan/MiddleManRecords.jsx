@@ -35,11 +35,11 @@ function MiddleManRecords() {
     api
       .get(`/contact/get-unverified-contacts/`)
       .then((response) => {
-        console.log("Contacts fetched successfully:", response.data.data);
+        // console.log("Contacts fetched successfully:", response.data.data);
         setData(response.data.data);
       })
       .catch((error) => {
-        console.error("Error fetching contacts:", error);
+        // console.error("Error fetching contacts:", error);
         showAlert("error", "Failed to fetch unverified contacts.");
       });
   };
@@ -47,10 +47,10 @@ function MiddleManRecords() {
   const handleSelectUnverifiedVisitingCards = async () => {
     try {
       const response = await api.get(`/contact/get-unverified-images/`);
-      console.log("Visiting cards fetched successfully:", response.data.data);
+      // console.log("Visiting cards fetched successfully:", response.data.data);
       setVisitingCard(response.data.data || []);
     } catch (error) {
-      console.error("Error fetching visiting cards:", error);
+      // console.error("Error fetching visiting cards:", error);
       showAlert("error", "Failed to fetch visiting cards.");
     }
   };
@@ -59,10 +59,10 @@ function MiddleManRecords() {
     try {
       setLoading(true);
       const response = await api.get(`/contact/get-assigned-to/${id}`);
-      console.log("Assigned by user data fetched successfully:", response.data);
+      // console.log("Assigned by user data fetched successfully:", response.data);
       setAssignedByUserData(response.data);
     } catch (error) {
-      console.error("Error fetching assigned by user data:", error);
+      // console.error("Error fetching assigned by user data:", error);
       showAlert("error", "Failed to fetch users assigned by you.");
     } finally {
       setLoading(false);
@@ -220,7 +220,7 @@ function MiddleManRecords() {
         setUserToDelete(null);
       } catch (error) {
         showAlert("error", "Failed to delete. Please try again.");
-        console.log("Error deleting:", error);
+        // console.log("Error deleting:", error);
       } finally {
         setIsDeleting(false);
       }
@@ -236,7 +236,7 @@ function MiddleManRecords() {
   const onAdd = async (contact_id) => {
     try {
       const user = data.find((user) => user.contact_id === contact_id);
-      console.log("Adding user:", user);
+      // console.log("Adding user:", user);
       if (user) {
         navigate("/details-input", {
           state: {
@@ -254,7 +254,7 @@ function MiddleManRecords() {
       }
     } catch (error) {
       showAlert("error", "Failed to load user data for adding.");
-      console.log("Error loading user for add", error);
+      // console.log("Error loading user for add", error);
     }
   };
   const handleDeleteAssignedUser = async (assignment_id) => {

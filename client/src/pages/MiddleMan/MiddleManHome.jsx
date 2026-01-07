@@ -564,9 +564,9 @@ const MiddleManHome = () => {
       observerRef.current = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting && pagination.has_next) {
-            console.log(
-              "🔄 Loading more contacts via Intersection Observer..."
-            );
+            // console.log(
+            //   "🔄 Loading more contacts via Intersection Observer..."
+            // );
             loadMoreContacts();
           }
         },
@@ -668,10 +668,10 @@ const MiddleManHome = () => {
           : `/contact/get-filter-options?category=${role}`;
 
         const response = await api.get(url);
-        console.log("Filter Options: ", response.data);
+        // console.log("Filter Options: ", response.data);
         setFilterOptions(response.data.data);
       } catch (error) {
-        console.error("Failed to fetch filter options:", error);
+        // console.error("Failed to fetch filter options:", error);
       }
     };
 
@@ -688,7 +688,7 @@ const MiddleManHome = () => {
     const category = rolesDict[role];
 
     if (!category && role !== "admin") {
-      console.error("Invalid role for fetching contacts:", role);
+      // console.error("Invalid role for fetching contacts:", role);
       showAlert("error", "Invalid role for fetching contacts");
       return;
     }
@@ -724,9 +724,9 @@ const MiddleManHome = () => {
         }
       });
 
-      console.log(
-        `🔍 Fetching contacts - Page ${page}, URL: /contact/contacts/filter/?${params.toString()}`
-      );
+      // console.log(
+      //   `🔍 Fetching contacts - Page ${page}, URL: /contact/contacts/filter/?${params.toString()}`
+      // );
 
       const response = await api.get(
         `/contact/contacts/filter/?${params.toString()}`
@@ -736,12 +736,12 @@ const MiddleManHome = () => {
       const contactsData = response.data.data?.contacts || [];
       const paginationData = response.data.data?.pagination || {};
 
-      console.log("📊 Contacts fetched:", {
-        page,
-        contactsCount: contactsData.length,
-        totalContacts: paginationData.total_contacts,
-        hasNext: paginationData.has_next,
-      });
+      // console.log("📊 Contacts fetched:", {
+      //   page,
+      //   contactsCount: contactsData.length,
+      //   totalContacts: paginationData.total_contacts,
+      //   hasNext: paginationData.has_next,
+      // });
 
       const formattedContacts = contactsData.map((item) => ({
         ...item,
@@ -773,7 +773,7 @@ const MiddleManHome = () => {
         setAllContacts(formattedContacts);
       }
     } catch (error) {
-      console.error("Failed to fetch contacts:", error);
+      // console.error("Failed to fetch contacts:", error);
       showAlert("error", "Failed to fetch contacts. Please try again.");
     } finally {
       setLoading(false);
@@ -785,16 +785,16 @@ const MiddleManHome = () => {
   const loadMoreContacts = async () => {
     if (loadingMore || !pagination.has_next) return;
 
-    console.log(
-      "🔄 Loading more contacts, next page:",
-      pagination.current_page + 1
-    );
+    // console.log(
+    //   "🔄 Loading more contacts, next page:",
+    //   pagination.current_page + 1
+    // );
     await fetchContacts(pagination.current_page + 1, true);
   };
 
   // Reset to first page when filters or search change
   useEffect(() => {
-    console.log("🔄 Filters or search changed, resetting to page 1");
+    // console.log("🔄 Filters or search changed, resetting to page 1");
     fetchContacts(1, false);
   }, [role, searchTerm, activeFilters]);
 
@@ -808,10 +808,10 @@ const MiddleManHome = () => {
 
     const timeoutId = setTimeout(() => {
       if (searchTerm !== undefined) {
-        console.log(
-          "🔍 Search debounced, fetching contacts with search:",
-          searchTerm
-        );
+        // console.log(
+        //   "🔍 Search debounced, fetching contacts with search:",
+        //   searchTerm
+        // );
         fetchContacts(1, false);
       }
     }, 500);
@@ -883,14 +883,14 @@ const MiddleManHome = () => {
 
   const handleEditComplete = async (updatedData) => {
     try {
-      console.log("Saving data:", updatedData);
+      // console.log("Saving data:", updatedData);
 
       const response = await api.put(
         `/contact/update-contact/${updatedData.contact_id}`,
         updatedData
       );
 
-      console.log("Update response:", response);
+      // console.log("Update response:", response);
 
       setContacts((prevContacts) =>
         prevContacts.map((contact) =>
@@ -907,7 +907,7 @@ const MiddleManHome = () => {
       setIsEditing(false);
       setEditingUser(null);
     } catch (error) {
-      console.error("Failed to update contact:", error);
+      // console.error("Failed to update contact:", error);
       showAlert("error", "Failed to update contact. Please try again.");
     }
   };
@@ -919,33 +919,33 @@ const MiddleManHome = () => {
 
   // Delete handlers with loading state
   const handleDeleteClick = (contact) => {
-    console.log("Delete button clicked for contact:", contact);
+    // console.log("Delete button clicked for contact:", contact);
     setContactToDelete(contact);
     setShowDeleteModal(true);
   };
 
   // Updated delete confirmation with loading state
   const handleDeleteConfirm = async () => {
-    console.log("Delete confirmed for:", contactToDelete);
+    // console.log("Delete confirmed for:", contactToDelete);
 
     if (!contactToDelete) {
-      console.log("No contact to delete");
+      // console.log("No contact to delete");
       return;
     }
 
     setIsDeleting(true);
 
     try {
-      console.log(
-        "Making API call to delete contact:",
-        contactToDelete.contact_id
-      );
+      // console.log(
+      //   "Making API call to delete contact:",
+      //   contactToDelete.contact_id
+      // );
 
       await api.delete(
         `/contact/verified-contact-delete/${contactToDelete.contact_id}?userType=${role}&eventId=${id}`
       );
 
-      console.log("Delete successful, updating state");
+      // console.log("Delete successful, updating state");
 
       // Update state
       setContacts((prevContacts) =>
@@ -959,7 +959,7 @@ const MiddleManHome = () => {
         `${contactToDelete.name} has been successfully deleted.`
       );
     } catch (error) {
-      console.error("Delete failed:", error);
+      // console.error("Delete failed:", error);
       showAlert("error", "Failed to delete contact. Please try again.");
     } finally {
       // Always close modal and reset loading state
@@ -972,7 +972,7 @@ const MiddleManHome = () => {
   // Updated cancel handler
   const handleDeleteCancel = () => {
     if (isDeleting) return; // Prevent closing during deletion
-    console.log("Delete cancelled");
+    // console.log("Delete cancelled");
     setShowDeleteModal(false);
     setContactToDelete(null);
   };

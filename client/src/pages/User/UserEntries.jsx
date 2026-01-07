@@ -100,7 +100,7 @@ function UserEntries() {
     if (userToDelete) {
       setIsDeleting(true);
       try {
-        console.log(userToDelete);
+        // console.log(userToDelete);
 
         if (userToDelete.type === "image") {
           const response = await api.delete(
@@ -179,7 +179,7 @@ function UserEntries() {
         setShowDeleteModal(false);
         setUserToDelete(null);
       } catch (error) {
-        console.log("Error deleting", userToDelete.id, error);
+        // console.log("Error deleting", userToDelete.id, error);
 
         if (error.response?.status === 403) {
           showAlert(
@@ -216,7 +216,7 @@ function UserEntries() {
   const onEdit = async (participant) => {
     try {
       if (participant) {
-        console.log("Participant data:", participant);
+        // console.log("Participant data:", participant);
         const userToEdit = {
           id: participant.contact_id,
           name: participant.name,
@@ -245,7 +245,7 @@ function UserEntries() {
                 ],
         };
 
-        console.log("Prepared user data for edit:", userToEdit);
+        // console.log("Prepared user data for edit:", userToEdit);
 
         // Navigate to form page with contact data
         navigate("/form-input", {
@@ -257,28 +257,28 @@ function UserEntries() {
       }
     } catch (error) {
       showAlert("error", "Failed to load user data for editing.");
-      console.log("Error editing user", error);
+      // console.log("Error editing user", error);
     }
   };
 
   const handleSelectContact = async () => {
     try {
-      console.log(id);
+      // console.log(id);
       const response = await api.get(`/contact/contacts/${id}`);
-      console.log("Contacts fetched successfully:", response.data.data);
+      // console.log("Contacts fetched successfully:", response.data.data);
       setProfileData(response.data.data);
     } catch (error) {
-      console.error("Error fetching contacts:", error);
+      // console.error("Error fetching contacts:", error);
     }
   };
 
   const handleSelectImage = async () => {
     try {
       const response = await api.get(`/contact/get-contact-images/${id}`);
-      console.log("Contact images fetched successfully:", response.data);
+      // console.log("Contact images fetched successfully:", response.data);
       setImageData(response.data);
     } catch (error) {
-      console.error("Error fetching contact images:", error);
+      // console.error("Error fetching contact images:", error);
     }
   };
 

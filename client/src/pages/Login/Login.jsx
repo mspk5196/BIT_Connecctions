@@ -41,7 +41,7 @@ const LoginPage = () => {
         navigate("/");
       }
     } catch (error) {
-      console.error("Login failed:", error);
+      // console.error("Login failed:", error);
       const errorMessage =
         error.response?.data?.message ||
         "Login failed. Please check your credentials and try again.";
@@ -67,7 +67,7 @@ const LoginPage = () => {
         throw new Error(apiResponse.data.message || "Authentication failed");
       }
     } catch (error) {
-      console.error("Google sign-in failed:", error);
+      // console.error("Google sign-in failed:", error);
       const errorMessage =
         error.response?.data?.message ||
         "Google sign-in failed. Please try again.";
@@ -104,10 +104,10 @@ const LoginPage = () => {
             }
           );
         } else {
-          console.warn("Google Identity Services not loaded");
+          // console.warn("Google Identity Services not loaded");
         }
       } catch (error) {
-        console.error("Failed to initialize Google Sign-In:", error);
+        // console.error("Failed to initialize Google Sign-In:", error);
       }
     };
 

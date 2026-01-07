@@ -18,7 +18,7 @@ let isRegistered = false;
 
 export const registerChartComponents = () => {
   if (isRegistered) return;
-  
+
   ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -32,7 +32,7 @@ export const registerChartComponents = () => {
     Legend,
     Filler
   );
-  
+
   // 🔥 DISABLE ANIMATIONS GLOBALLY FOR PERFORMANCE
   ChartJS.defaults.animation = false;
   ChartJS.defaults.animations = {
@@ -47,7 +47,7 @@ export const registerChartComponents = () => {
       },
     },
   };
-  
+
   isRegistered = true;
-  console.log("✅ Chart.js components registered with animations disabled");
+  // console.log("✅ Chart.js components registered with animations disabled");
 };

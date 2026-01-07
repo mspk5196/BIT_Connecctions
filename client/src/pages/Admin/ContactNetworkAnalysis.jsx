@@ -18,14 +18,14 @@ function ContactNetworkAnalysis() {
       setLoading(true);
       const response = await api.get("/contact/analyze-contact-network");
       setNetworkData(response.data);
-      console.log("Network data loaded:", response.data);
+      // console.log("Network data loaded:", response.data);
     } catch (err) {
       setError(
         err.response?.data?.error ||
           err.message ||
           "Failed to fetch network data"
       );
-      console.error("Error fetching network data:", err);
+      // console.error("Error fetching network data:", err);
     } finally {
       setLoading(false);
     }

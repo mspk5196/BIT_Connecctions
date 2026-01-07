@@ -203,7 +203,7 @@ function DetailsInput() {
       const calculatedAge = formattedDob
         ? calculateAge(formattedDob)
         : initialData.age || "";
-      console.log("Skills:", initialData.skills);
+      // console.log("Skills:", initialData.skills);
       setFormData((prevData) => ({
         contact_id: initialData.contact_id || "",
         assignment_id: initialData.assignment_id || null,
@@ -933,7 +933,7 @@ function DetailsInput() {
 
     return apiPayload;
   };
-  console.log(location.state);
+  // console.log(location.state);
   // Handle different API calls with alerts
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -953,23 +953,23 @@ function DetailsInput() {
     }
 
     const apiPayload = transformFormDataForAPI(formData);
-    console.log("Transformed API Payload:", apiPayload);
-    console.log(
-      "Skills Debug - formData.skills:",
-      formData.skills,
-      "Type:",
-      typeof formData.skills
-    );
-    console.log(
-      "Skills Debug - apiPayload.skills:",
-      apiPayload.skills,
-      "Type:",
-      typeof apiPayload.skills
-    );
-    console.log("isAddMode:", isAddMode);
-    console.log("initialData:", initialData);
-    console.log("source:", source);
-    console.log("formData.contact_id:", formData.contact_id);
+    // console.log("Transformed API Payload:", apiPayload);
+    // console.log(
+    //   "Skills Debug - formData.skills:",
+    //   formData.skills,
+    //   "Type:",
+    //   typeof formData.skills
+    // );
+    // console.log(
+    //   "Skills Debug - apiPayload.skills:",
+    //   apiPayload.skills,
+    //   "Type:",
+    //   typeof apiPayload.skills
+    // );
+    // console.log("isAddMode:", isAddMode);
+    // console.log("initialData:", initialData);
+    // console.log("source:", source);
+    // console.log("formData.contact_id:", formData.contact_id);
 
     try {
       // Check for specific verification flows (middleman, userassignments)
@@ -990,7 +990,7 @@ function DetailsInput() {
           successMessage = `${
             apiPayload.name || initialData.name
           } has been successfully verified and added to contacts.`;
-          console.log("MiddleMan Update response:", response);
+          // console.log("MiddleMan Update response:", response);
         } else if (source === "userassignments") {
           // For UserAssignments - update as pending
           response = await api.put(
@@ -1002,7 +1002,7 @@ function DetailsInput() {
             `${
               apiPayload.name || initialData.name
             } has been successfully updated.`;
-          console.log("UserAssignments Update response:", response);
+          // console.log("UserAssignments Update response:", response);
         }
 
         // Show success alert before navigating
@@ -1033,7 +1033,7 @@ function DetailsInput() {
           apiPayload
         );
         successMessage = `${apiPayload.name} has been successfully added to contacts.`;
-        console.log("admin Create response:", response);
+        // console.log("admin Create response:", response);
         showAlert("success", successMessage);
         setTimeout(() => {
           navigate(-1);
@@ -1044,17 +1044,17 @@ function DetailsInput() {
           throw new Error("Contact ID is missing for update operation");
         }
 
-        console.log(
-          "Making PUT request to:",
-          `/contact/update-contact/${apiPayload.contact_id}?userId=${id}`
-        );
+        // console.log(
+        //   "Making PUT request to:",
+        //   `/contact/update-contact/${apiPayload.contact_id}?userId=${id}`
+        // );
 
         const response = await api.put(
           `/contact/update-contact/${apiPayload.contact_id}?userId=${id}`,
           apiPayload
         );
 
-        console.log("Regular Update response:", response);
+        // console.log("Regular Update response:", response);
 
         if (response.data?.success) {
           const successMessage = `${apiPayload.name} has been successfully updated.`;
@@ -1069,7 +1069,7 @@ function DetailsInput() {
         }
       }
     } catch (error) {
-      console.error("Error updating contact:", error);
+      // console.error("Error updating contact:", error);
 
       let errorMessage = "Failed to update contact. Please try again.";
 
@@ -1092,7 +1092,7 @@ function DetailsInput() {
           assigned_to: initialData.events[0]?.created_by,
           event_id: initialData.events[0]?.event_id,
         });
-        console.log("Assign to user response:", response.data);
+        // console.log("Assign to user response:", response.data);
 
         // Show success alert
         showAlert(
@@ -1105,7 +1105,7 @@ function DetailsInput() {
           navigate(-1);
         }, 1500);
       } catch (error) {
-        console.log("Error assigning to user:", error);
+        // console.log("Error assigning to user:", error);
         showAlert("error", "Failed to assign to user. Please try again.");
       }
     }

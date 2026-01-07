@@ -85,7 +85,7 @@ function FormInput() {
       const stored = localStorage.getItem(`recent-events-${id}`);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error("Error loading recent events:", error);
+      // console.error("Error loading recent events:", error);
       return [];
     }
   };
@@ -108,7 +108,7 @@ function FormInput() {
 
       localStorage.setItem(`recent-events-${id}`, JSON.stringify(updated));
     } catch (error) {
-      console.error("Error saving recent event:", error);
+      // console.error("Error saving recent event:", error);
     }
   };
 
@@ -211,7 +211,7 @@ function FormInput() {
         handleBack();
       }, 2000);
     } catch (error) {
-      console.error("Save contact error:", error);
+      // console.error("Save contact error:", error);
       if (isEditMode) {
         showAlert("error", `Failed to update contact and event.`);
       } else if (selectedContact) {
@@ -316,16 +316,16 @@ function FormInput() {
     }
 
     try {
-      console.log(`Fetching suggestions for field: ${field}, query: ${query}`); // Debug log
+      // console.log(`Fetching suggestions for field: ${field}, query: ${query}`); // Debug log
 
       // Use the correct endpoint - should match your existing search endpoint
       const response = await api.get(
         `/contact/search-contact?q=${encodeURIComponent(query)}`
       );
-      console.log("API Response:", response.data); // Debug log
+      // console.log("API Response:", response.data); // Debug log
 
       const results = response.data.data || response.data || [];
-      console.log("Filtered results:", results); // Debug log
+      // console.log("Filtered results:", results); // Debug log
 
       // Filter results based on the field being searched
       let filteredResults = [];
@@ -350,13 +350,13 @@ function FormInput() {
         filteredResults = results;
       }
 
-      console.log("Final filtered results:", filteredResults); // Debug log
+      // console.log("Final filtered results:", filteredResults); // Debug log
 
       setSuggestions(filteredResults);
       setActiveField(field);
       setShowSuggestions(filteredResults.length > 0);
     } catch (error) {
-      console.error("Error fetching suggestions:", error);
+      // console.error("Error fetching suggestions:", error);
       setSuggestions([]);
       setShowSuggestions(false);
     }

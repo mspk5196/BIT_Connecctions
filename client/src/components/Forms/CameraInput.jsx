@@ -71,7 +71,7 @@ function CameraInput() {
         constraints
       );
       setStream(mediaStream);
-            
+
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
 
@@ -82,7 +82,7 @@ function CameraInput() {
               .play()
               .then(resolve)
               .catch((e) => {
-                console.error("Error playing video:", e);
+                // console.error("Error playing video:", e);
                 resolve();
               });
           };
@@ -92,7 +92,7 @@ function CameraInput() {
       setCurrentView("camera-active");
       setIsFromUpload(false);
     } catch (error) {
-      console.error("Error accessing camera:", error);
+      // console.error("Error accessing camera:", error);
       if (error.name === "NotAllowedError") {
         showAlert(
           "error",
@@ -222,15 +222,11 @@ function CameraInput() {
       formData.append("photo", blob, "business-card.jpg");
       formData.append("user_id", id);
 
-      const response = await api.post(
-        "/upload-image",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await api.post("/upload-image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       if (response.status === 200) {
         showAlert("success", "Photo uploaded successfully!");
@@ -240,7 +236,7 @@ function CameraInput() {
         setIsFromUpload(false);
       }
     } catch (error) {
-      console.error("Error uploading photo:", error);
+      // console.error("Error uploading photo:", error);
       showAlert("error", "Failed to upload photo. Please try again.");
     } finally {
       setLoading(false);

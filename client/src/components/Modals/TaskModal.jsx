@@ -56,7 +56,7 @@ const TaskModal = ({
       contact_id: taskData.contact_id,
     };
 
-    console.log("🚀 Submitting data:", submitData);
+    // console.log("🚀 Submitting data:", submitData);
     onSubmit(submitData);
   };
 
@@ -69,7 +69,7 @@ const TaskModal = ({
   };
 
   const handleContactSelect = (contact) => {
-    console.log("Selected contact:", contact);
+    // console.log("Selected contact:", contact);
   };
 
   const isFormValid = taskData.task_title && taskData.task_assigned_category && taskData.task_deadline;

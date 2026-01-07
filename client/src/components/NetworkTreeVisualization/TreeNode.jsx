@@ -143,7 +143,7 @@ const TreeNode = React.memo(({
             onTouchMove={onNodeTouchMove}
             onTouchEnd={onNodeTouchEnd}
             onError={(e) => onAvatarError(e, node)}
-            onLoad={() => console.log('Avatar loaded successfully for:', node.name)}
+            // onLoad={() => console.log('Avatar loaded successfully for:', node.name)}
           />
         </foreignObject>
 

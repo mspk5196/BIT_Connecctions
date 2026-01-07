@@ -75,7 +75,7 @@ const TasksPage = () => {
   // Updated navigateToContactProfile function [web:569][web:572]
   const navigateToContactProfile = async (contactId) => {
     try {
-      console.log("Fetching complete contact data for ID:", contactId);
+      // console.log("Fetching complete contact data for ID:", contactId);
 
       // Use the updated GetFilteredContacts API with contact_id parameter
       const response = await api.get(
@@ -83,7 +83,7 @@ const TasksPage = () => {
       );
 
       if (!response.data.success) {
-        console.error("Failed to fetch contact data:", response.data.message);
+        // console.error("Failed to fetch contact data:", response.data.message);
         alert("Failed to load contact information");
         return;
       }
@@ -92,12 +92,12 @@ const TasksPage = () => {
       const contactData = response.data.data.contact;
 
       if (!contactData) {
-        console.error("Contact data not found in response");
+        // console.error("Contact data not found in response");
         alert("Contact information not available");
         return;
       }
 
-      console.log("Raw contact data:", contactData);
+      // console.log("Raw contact data:", contactData);
 
       // Format the single contact object (not array) [web:574][web:577]
       const formattedContact = {
@@ -115,23 +115,23 @@ const TasksPage = () => {
         avatarColor: getAvatarColor(contactData.contact_id),
       };
 
-      console.log("Formatted contact data:", {
-        contact_id: formattedContact.contact_id,
-        name: formattedContact.name,
-        role: formattedContact.role,
-        company: formattedContact.company,
-        location: formattedContact.location,
-        skills_count: formattedContact.skills.length,
-        experiences_count: formattedContact.experiences?.length || 0,
-        events_count: formattedContact.events?.length || 0,
-      });
+      // console.log("Formatted contact data:", {
+      //   contact_id: formattedContact.contact_id,
+      //   name: formattedContact.name,
+      //   role: formattedContact.role,
+      //   company: formattedContact.company,
+      //   location: formattedContact.location,
+      //   skills_count: formattedContact.skills.length,
+      //   experiences_count: formattedContact.experiences?.length || 0,
+      //   events_count: formattedContact.events?.length || 0,
+      // });
 
       // Navigate to profile with formatted contact data [web:577][web:582]
       navigate(`/profile/${formattedContact.contact_id}`, {
         state: formattedContact,
       });
     } catch (error) {
-      console.error("Error fetching contact data:", error);
+      // console.error("Error fetching contact data:", error);
 
       // Enhanced error handling with user-friendly messages
       let errorMessage = "Failed to load contact information";
@@ -163,7 +163,7 @@ const TasksPage = () => {
             `/contact/get-tasks/?category=${category}`
           );
 
-          console.log("API Response:", response.data);
+          // console.log("API Response:", response.data);
 
           // Map tasks to include status field based on task_completion
           const mappedTasks = (response.data.data || []).map((task) => ({
@@ -171,11 +171,11 @@ const TasksPage = () => {
             status: task.task_completion ? "completed" : "pending",
           }));
 
-          console.log("Mapped tasks:", mappedTasks);
-          console.log(
-            "Completed tasks count:",
-            mappedTasks.filter((t) => t.status === "completed").length
-          );
+          // console.log("Mapped tasks:", mappedTasks);
+          // console.log(
+          //   "Completed tasks count:",
+          //   mappedTasks.filter((t) => t.status === "completed").length
+          // );
 
           setTasks(mappedTasks);
           setTaskStats(
@@ -186,7 +186,7 @@ const TasksPage = () => {
           setTaskStats({ total: 0, completed: 0, pending: 0 });
         }
       } catch (error) {
-        console.error("Error fetching tasks:", error);
+        // console.error("Error fetching tasks:", error);
         setTasks([]);
       } finally {
         setLoading(false);
@@ -242,7 +242,7 @@ const TasksPage = () => {
         });
       }
     } catch (error) {
-      console.error("Error completing task:", error);
+      // console.error("Error completing task:", error);
     }
   };
 

@@ -1,105 +1,123 @@
-import React, { useMemo } from 'react';
-import { Line } from 'react-chartjs-2';
-import DatePicker from 'react-datepicker';
-import { format, parseISO, subDays, subMonths, isAfter, startOfDay, endOfDay, isValid, eachDayOfInterval, addDays, startOfMonth, endOfMonth } from 'date-fns';
+import React, { useMemo } from "react";
+import { Line } from "react-chartjs-2";
+import DatePicker from "react-datepicker";
+import {
+  format,
+  parseISO,
+  subDays,
+  subMonths,
+  isAfter,
+  startOfDay,
+  endOfDay,
+  isValid,
+  eachDayOfInterval,
+  addDays,
+  startOfMonth,
+  endOfMonth,
+} from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
 
 // Utility function to generate all dates in range
 const generateDateRange = (startDate, endDate) => {
   return eachDayOfInterval({
     start: startOfDay(startDate),
-    end: endOfDay(endDate)
-  }).map(date => format(date, "yyyy-MM-dd"));
+    end: endOfDay(endDate),
+  }).map((date) => format(date, "yyyy-MM-dd"));
 };
 
 // Utility functions for processing modification history
-const processModificationHistory = (modificationHistory, startDate, endDate) => {
+const processModificationHistory = (
+  modificationHistory,
+  startDate,
+  endDate
+) => {
   const createdDates = {};
   const updatedDates = {};
-  
-  console.log("🔍 Processing modification history sample:", modificationHistory.slice(0, 3));
-  
+
+  // console.log("🔍 Processing modification history sample:", modificationHistory.slice(0, 3));
+
   // Filter and process modification history within date range
   modificationHistory.forEach((modification, index) => {
     // Try different possible timestamp field names
-    let timestampValue = modification.timestamp || 
-                        modification.created_at || 
-                        modification.modified_at ||
-                        modification.date ||
-                        modification.updated_at;
-    
+    let timestampValue =
+      modification.timestamp ||
+      modification.created_at ||
+      modification.modified_at ||
+      modification.date ||
+      modification.updated_at;
+
     if (!timestampValue) {
       if (index < 3) {
-        console.warn("⚠️ No timestamp found in modification record:", modification);
+        // console.warn("⚠️ No timestamp found in modification record:", modification);
       }
       return;
     }
-    
+
     try {
       let date;
-      
+
       // Handle different date formats
-      if (typeof timestampValue === 'string') {
+      if (typeof timestampValue === "string") {
         date = parseISO(timestampValue);
       } else if (timestampValue instanceof Date) {
         date = timestampValue;
       } else {
         if (index < 3) {
-          console.warn("⚠️ Invalid timestamp format:", timestampValue);
+          // console.warn("⚠️ Invalid timestamp format:", timestampValue);
         }
         return;
       }
-      
+
       // Validate the parsed date
       if (!isValid(date)) {
         if (index < 3) {
-          console.warn("⚠️ Invalid parsed date:", date, "from:", timestampValue);
+          // console.warn("⚠️ Invalid parsed date:", date, "from:", timestampValue);
         }
         return;
       }
-      
+
       // Check if date is within range
       if (isAfter(date, startOfDay(startDate)) && date <= endOfDay(endDate)) {
         const dayKey = format(date, "yyyy-MM-dd");
         const modificationType = modification.modification_type;
-        
-        if (index < 3) {
-          console.log("✅ Processing record:", {
-            type: modificationType,
-            date: dayKey,
-            originalTimestamp: timestampValue
-          });
-        }
-        
+
+        // if (index < 3) {
+        //   console.log("✅ Processing record:", {
+        //     type: modificationType,
+        //     date: dayKey,
+        //     originalTimestamp: timestampValue
+        //   });
+        // }
+
         // Count CREATE operations
-        if (modificationType === 'CREATE') {
+        if (modificationType === "CREATE") {
           createdDates[dayKey] = (createdDates[dayKey] || 0) + 1;
         }
-        
+
         // Count UPDATE operations (including various update types)
         else if (
-          modificationType === 'UPDATE' || 
-          modificationType === 'UPDATE USER EVENT' || 
-          modificationType === 'USER VERIFY' ||
-          modificationType === 'ASSIGN' ||
-          modificationType.includes('UPDATE')
+          modificationType === "UPDATE" ||
+          modificationType === "UPDATE USER EVENT" ||
+          modificationType === "USER VERIFY" ||
+          modificationType === "ASSIGN" ||
+          modificationType.includes("UPDATE")
         ) {
           updatedDates[dayKey] = (updatedDates[dayKey] || 0) + 1;
         }
       }
     } catch (error) {
       if (index < 3) {
-        console.error("❌ Error processing modification record:", error, modification);
+        // console.error("❌ Error processing modification record:", error, modification);
       }
     }
   });
 
-  console.log("📊 Processed dates:", {
-    createdDates: Object.keys(createdDates).length,
-    updatedDates: Object.keys(updatedDates).length,
-    createdSample: Object.entries(createdDates).slice(0, 3),
-    updatedSample: Object.entries(updatedDates).slice(0, 3)
-  });
+  // console.log("📊 Processed dates:", {
+  //   createdDates: Object.keys(createdDates).length,
+  //   updatedDates: Object.keys(updatedDates).length,
+  //   createdSample: Object.entries(createdDates).slice(0, 3),
+  //   updatedSample: Object.entries(updatedDates).slice(0, 3)
+  // });
 
   return { createdDates, updatedDates };
 };
@@ -161,34 +179,36 @@ const ContactsChart = ({
 
   const processChartData = useMemo(() => {
     // Ensure we have a valid array
-    const historyArray = Array.isArray(modificationHistory) ? modificationHistory : [];
-    
-    console.log("🔍 Processing modification history:", {
-      totalRecords: historyArray.length,
-      dateRange: `${format(startDate, "yyyy-MM-dd")} to ${format(endDate, "yyyy-MM-dd")}`,
-      sampleRecord: historyArray[0],
-      allFieldsInFirstRecord: historyArray[0] ? Object.keys(historyArray[0]) : []
-    });
-    
+    const historyArray = Array.isArray(modificationHistory)
+      ? modificationHistory
+      : [];
+
+    // console.log("🔍 Processing modification history:", {
+    //   totalRecords: historyArray.length,
+    //   dateRange: `${format(startDate, "yyyy-MM-dd")} to ${format(endDate, "yyyy-MM-dd")}`,
+    //   sampleRecord: historyArray[0],
+    //   allFieldsInFirstRecord: historyArray[0] ? Object.keys(historyArray[0]) : []
+    // });
+
     // Generate all dates in the selected range
     const allDatesInRange = generateDateRange(startDate, endDate);
-    
+
     // Process the modification history data
     const { createdDates, updatedDates } = processModificationHistory(
-      historyArray, 
-      startDate, 
+      historyArray,
+      startDate,
       endDate
     );
 
-    console.log("📊 Chart data processed:", {
-      totalDaysInRange: allDatesInRange.length,
-      daysWithCreatedData: Object.keys(createdDates).length,
-      daysWithUpdatedData: Object.keys(updatedDates).length,
-      createOperations: Object.values(createdDates).reduce((sum, count) => sum + count, 0),
-      updateOperations: Object.values(updatedDates).reduce((sum, count) => sum + count, 0),
-      dateRange: allDatesInRange.length > 0 ? `${allDatesInRange[0]} to ${allDatesInRange[allDatesInRange.length - 1]}` : 'No data',
-      sampleDates: allDatesInRange.slice(0, 5) // Show first 5 dates
-    });
+    // console.log("📊 Chart data processed:", {
+    //   totalDaysInRange: allDatesInRange.length,
+    //   daysWithCreatedData: Object.keys(createdDates).length,
+    //   daysWithUpdatedData: Object.keys(updatedDates).length,
+    //   createOperations: Object.values(createdDates).reduce((sum, count) => sum + count, 0),
+    //   updateOperations: Object.values(updatedDates).reduce((sum, count) => sum + count, 0),
+    //   dateRange: allDatesInRange.length > 0 ? `${allDatesInRange[0]} to ${allDatesInRange[allDatesInRange.length - 1]}` : 'No data',
+    //   sampleDates: allDatesInRange.slice(0, 5) // Show first 5 dates
+    // });
 
     return {
       labels: allDatesInRange,
@@ -236,21 +256,21 @@ const ContactsChart = ({
         display: false,
       },
       tooltip: {
-        mode: 'index',
+        mode: "index",
         intersect: false,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fff',
-        bodyColor: '#fff',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        titleColor: "#fff",
+        bodyColor: "#fff",
+        borderColor: "rgba(255, 255, 255, 0.1)",
         borderWidth: 1,
         callbacks: {
-          title: function(context) {
+          title: function (context) {
             return `Date: ${context[0].label}`;
           },
-          label: function(context) {
+          label: function (context) {
             return `${context.dataset.label}: ${context.parsed.y}`;
-          }
-        }
+          },
+        },
       },
       filler: {
         propagate: false,
@@ -261,33 +281,33 @@ const ContactsChart = ({
         beginAtZero: true,
         ticks: {
           stepSize: 1,
-          callback: function(value) {
-            return Number.isInteger(value) ? value : '';
-          }
+          callback: function (value) {
+            return Number.isInteger(value) ? value : "";
+          },
         },
         grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
+          color: "rgba(0, 0, 0, 0.1)",
         },
       },
       x: {
         ticks: {
           maxTicksLimit: 15,
-          callback: function(value, index, values) {
+          callback: function (value, index, values) {
             const date = this.getLabelForValue(value);
             try {
-              return format(parseISO(date), 'MMM dd');
+              return format(parseISO(date), "MMM dd");
             } catch {
               return date;
             }
-          }
+          },
         },
         grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
+          color: "rgba(0, 0, 0, 0.1)",
         },
       },
     },
     interaction: {
-      mode: 'nearest',
+      mode: "nearest",
       intersect: false,
     },
     elements: {
@@ -308,8 +328,14 @@ const ContactsChart = ({
   ];
 
   // Calculate summary statistics
-  const totalCreated = processChartData.datasets[0].data.reduce((a, b) => a + b, 0);
-  const totalUpdated = processChartData.datasets[1].data.reduce((a, b) => a + b, 0);
+  const totalCreated = processChartData.datasets[0].data.reduce(
+    (a, b) => a + b,
+    0
+  );
+  const totalUpdated = processChartData.datasets[1].data.reduce(
+    (a, b) => a + b,
+    0
+  );
   const totalOperations = totalCreated + totalUpdated;
 
   return (
@@ -381,7 +407,9 @@ const ContactsChart = ({
           <div className="h-full flex items-center justify-center">
             <div className="text-center text-gray-500">
               <div className="text-lg font-medium">No Data Available</div>
-              <div className="text-sm">No modification history found for the selected date range</div>
+              <div className="text-sm">
+                No modification history found for the selected date range
+              </div>
             </div>
           </div>
         ) : (
@@ -392,7 +420,8 @@ const ContactsChart = ({
       {/* Footer Information */}
       <div className="mt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-xs text-gray-500">
         <span>
-          📅 Range: {format(startDate, "MMM dd, yyyy")} - {format(endDate, "MMM dd, yyyy")}
+          📅 Range: {format(startDate, "MMM dd, yyyy")} -{" "}
+          {format(endDate, "MMM dd, yyyy")}
         </span>
         <div className="flex gap-4">
           <span>📊 {modificationHistory.length} total history records</span>

@@ -60,7 +60,7 @@ const SkillAutoFinish = ({
         setSuggestions([]);
       }
     } catch (error) {
-      console.error("Error searching skills:", error);
+      // console.error("Error searching skills:", error);
       setSuggestions([]);
     } finally {
       setLoading(false);

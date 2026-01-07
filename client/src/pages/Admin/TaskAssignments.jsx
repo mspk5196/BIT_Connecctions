@@ -109,9 +109,9 @@ function TaskAssignments() {
         calculateCategoryStats(response.data.data || []);
       }
 
-      console.log(response.data);
+      // console.log(response.data);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       showAlert("error", "Failed to fetch tasks");
     } finally {
       setLoading(false);
@@ -171,20 +171,20 @@ function TaskAssignments() {
       };
     });
 
-    console.log("Category Performance Stats:", categoryPerformance);
+    // console.log("Category Performance Stats:", categoryPerformance);
     setCategoryStats(categoryPerformance);
   };
 
   const createTask = async (taskData) => {
     try {
       setIsSubmitting(true);
-      console.log("Creating task with data:", taskData);
+      // console.log("Creating task with data:", taskData);
       await api.post("/contact/create-task", taskData);
       setShowCreateForm(false);
       showAlert("success", "Task created successfully");
       getTasks();
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       showAlert("error", "Failed to create task");
     } finally {
       setIsSubmitting(false);
@@ -195,30 +195,33 @@ function TaskAssignments() {
     try {
       setIsSubmitting(true);
 
-      console.log("🔧 Editing task:", editingTask);
-      console.log("🔧 Update data:", taskData);
+      // console.log("🔧 Editing task:", editingTask);
+      // console.log("🔧 Update data:", taskData);
 
       // Handle different possible ID field names
       const taskId = editingTask.task_id || editingTask.id || editingTask._id;
 
-      console.log("🔧 Using task ID:", taskId);
+      // console.log("🔧 Using task ID:", taskId);
 
       if (!taskId) {
-        console.error("❌ No task ID found in editingTask:", editingTask);
+        // console.error("❌ No task ID found in editingTask:", editingTask);
         showAlert("error", "Task ID not found");
         return;
       }
 
-      const response = await api.put(`/contact/update-task/${taskId}`, taskData);
-      console.log("🔧 Update response:", response.data);
+      const response = await api.put(
+        `/contact/update-task/${taskId}`,
+        taskData
+      );
+      // console.log("🔧 Update response:", response.data);
 
       setShowEditForm(false);
       setEditingTask(null);
       showAlert("success", "Task updated successfully");
       getTasks();
     } catch (error) {
-      console.error("❌ Update error:", error);
-      console.error("❌ Error response:", error.response?.data);
+      // console.error("❌ Update error:", error);
+      // console.error("❌ Error response:", error.response?.data);
       showAlert("error", "Failed to update task");
     } finally {
       setIsSubmitting(false);
@@ -244,7 +247,7 @@ function TaskAssignments() {
       showAlert("success", "Task deleted successfully");
       getTasks();
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       showAlert("error", "Failed to delete task");
     } finally {
       setIsDeleting(false);
@@ -252,13 +255,13 @@ function TaskAssignments() {
   };
 
   const handleEditClick = (task) => {
-    console.log("Edit clicked for task:", task);
+    // console.log("Edit clicked for task:", task);
     setEditingTask(task);
     setShowEditForm(true);
   };
 
   const handleDeleteClick = (task) => {
-    console.log("Delete clicked for task:", task);
+    // console.log("Delete clicked for task:", task);
     setDeletingTask(task);
     setShowDeleteConfirm(true);
   };

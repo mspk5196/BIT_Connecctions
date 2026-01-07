@@ -111,7 +111,7 @@ function Applayout() {
         try {
           await api.post(`/contact/user/ping/${id}`);
         } catch (error) {
-          console.error("Ping failed:", error);
+          // console.error("Ping failed:", error);
         }
       }
     }, 10000);

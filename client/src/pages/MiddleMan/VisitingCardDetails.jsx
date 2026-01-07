@@ -153,7 +153,7 @@ const VisitingCardDetails = () => {
         setCurrentCard(card);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching cards:", error);
+        // console.error("Error fetching cards:", error);
         setLoading(false);
       }
     };
@@ -388,7 +388,7 @@ const VisitingCardDetails = () => {
         throw new Error(responseData.error || "OCR extraction failed");
       }
     } catch (error) {
-      console.error("OCR extraction error:", error);
+      // console.error("OCR extraction error:", error);
 
       showAlert(
         "error",
@@ -461,7 +461,7 @@ const VisitingCardDetails = () => {
         return;
       }
 
-      console.log("Original visiting card details:", visitingCardDetails);
+      // console.log("Original visiting card details:", visitingCardDetails);
 
       // Transform the flat structure into the nested structure expected by the API
       const transformedData = {
@@ -538,7 +538,7 @@ const VisitingCardDetails = () => {
           : [],
       };
 
-      console.log("Transformed data for API:", transformedData);
+      // console.log("Transformed data for API:", transformedData);
 
       const response = await api.post(
         "/contact/create-contact",
@@ -546,7 +546,7 @@ const VisitingCardDetails = () => {
       );
       const response2 = await api.post(`/verify-image/${id}`, transformedData);
 
-      console.log("Contact created successfully:", response.data);
+      // console.log("Contact created successfully:", response.data);
 
       // Show success notification with alert modal
       showAlert("success", "Contact has been successfully verified and saved!");
@@ -558,7 +558,7 @@ const VisitingCardDetails = () => {
         });
       }, 2000);
     } catch (error) {
-      console.error("Error creating contact:", error);
+      // console.error("Error creating contact:", error);
 
       // Show error message with alert modal
       if (error.response?.data?.message) {
@@ -1598,7 +1598,7 @@ const VisitingCardDetails = () => {
           </p>
           <button
             onClick={() => {
-              console.log("Navigating with state:", { view: "visitingCards" });
+              // console.log("Navigating with state:", { view: "visitingCards" });
               navigate("/verify-records", { state: { view: "visitingCards" } });
             }}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -1628,9 +1628,9 @@ const VisitingCardDetails = () => {
           <div className="flex items-center space-x-3 sm:space-x-4">
             <button
               onClick={() => {
-                console.log("Navigating with state:", {
-                  view: "visitingCards",
-                });
+                // console.log("Navigating with state:", {
+                //   view: "visitingCards",
+                // });
                 navigate("/verify-records", {
                   state: { view: "visitingCards" },
                 });

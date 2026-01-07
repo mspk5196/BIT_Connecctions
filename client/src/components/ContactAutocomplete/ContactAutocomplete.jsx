@@ -8,7 +8,7 @@ const ContactAutocomplete = ({
   onSelect,
   placeholder = "Search contacts...",
   disabled = false,
-  initialContactId = null
+  initialContactId = null,
 }) => {
   const [query, setQuery] = useState(value || "");
   const [suggestions, setSuggestions] = useState([]);
@@ -20,13 +20,13 @@ const ContactAutocomplete = ({
   const inputRef = useRef(null);
 
   useEffect(() => {
-    console.log("ContactAutocomplete props:", { value, initialContactId });
+    // console.log("ContactAutocomplete props:", { value, initialContactId });
 
     if (value && initialContactId) {
-      console.log("Setting selectedContact with:", { id: initialContactId, name: value });
+      // console.log("Setting selectedContact with:", { id: initialContactId, name: value });
       setSelectedContact({
         contact_id: initialContactId,
-        name: value
+        name: value,
       });
     } else if (!value) {
       setSelectedContact(null);
@@ -46,13 +46,14 @@ const ContactAutocomplete = ({
       const response = await api.get(
         `/contact/search-contact?q=${encodeURIComponent(searchQuery)}`
       );
-      
-      const contacts = response.data.data || response.data.contacts || response.data || [];
+
+      const contacts =
+        response.data.data || response.data.contacts || response.data || [];
       setSuggestions(contacts);
       setShowSuggestions(true);
       setSelectedIndex(-1);
     } catch (error) {
-      console.error("Error searching contacts:", error);
+      // console.error("Error searching contacts:", error);
       setSuggestions([]);
     } finally {
       setIsLoading(false);
@@ -83,7 +84,7 @@ const ContactAutocomplete = ({
     setQuery(contact.name);
     setSelectedContact(contact);
     setShowSuggestions(false);
-    
+
     onChange(contact.name, contact.contact_id);
     onSelect && onSelect(contact);
     inputRef.current?.focus();
@@ -93,23 +94,23 @@ const ContactAutocomplete = ({
     if (!showSuggestions || suggestions.length === 0) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setSelectedIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : prev
         );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         if (selectedIndex >= 0) {
           handleSelectSuggestion(suggestions[selectedIndex]);
         }
         break;
-      case 'Escape':
+      case "Escape":
         setShowSuggestions(false);
         setSelectedIndex(-1);
         break;
@@ -145,9 +146,25 @@ const ContactAutocomplete = ({
         />
         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
           {isLoading ? (
-            <svg className="animate-spin h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            <svg
+              className="animate-spin h-4 w-4 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              ></path>
             </svg>
           ) : selectedContact ? (
             <UserCheck className="h-4 w-4 text-green-500" />
@@ -165,8 +182,8 @@ const ContactAutocomplete = ({
               key={contact.contact_id || index}
               className={`px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors duration-150 ${
                 index === selectedIndex
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'hover:bg-gray-50'
+                  ? "bg-blue-50 text-blue-700"
+                  : "hover:bg-gray-50"
               }`}
               onMouseDown={handleSuggestionMouseDown}
               onClick={() => handleSelectSuggestion(contact)}

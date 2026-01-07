@@ -314,20 +314,22 @@ function Admin() {
 
     const fetchModificationHistory = async () => {
       try {
-        const response = await api.get("/contact/get-all-modification-history/");
+        const response = await api.get(
+          "/contact/get-all-modification-history/"
+        );
         const data = response.data;
         if (data.success && data.data) {
           const limitedData = data.data.slice(-500);
           setModificationHistory(limitedData);
-          console.log(
-            "📊 Modification history loaded:",
-            limitedData.length,
-            "records"
-          );
+          // console.log(
+          //   "📊 Modification history loaded:",
+          //   limitedData.length,
+          //   "records"
+          // );
           setChartsDataReady(true);
         }
       } catch (error) {
-        console.error("Failed to fetch modification history:", error);
+        // console.error("Failed to fetch modification history:", error);
         setChartsDataReady(true);
       }
     };
@@ -383,7 +385,7 @@ function Admin() {
         const totalEvents = calculateUniqueEvents(allContacts);
 
         // 🔥 DEBUG: Log to see what's being counted
-        console.log("📊 Distinct Events Count:", totalEvents);
+        // console.log("📊 Distinct Events Count:", totalEvents);
 
         const rates = calculateAcquisitionRates(allContacts);
 
@@ -447,11 +449,11 @@ function Admin() {
               unverifiedContacts: totalUnverifiedContacts,
             }));
           } catch (err) {
-            console.error("Error fetching secondary data:", err);
+            // console.error("Error fetching secondary data:", err);
           }
         }, 200);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        // console.error("Error fetching dashboard data:", error);
         showAlert("error", "Failed to fetch dashboard data");
         setDataLoaded(true);
         setIsRefreshing(false);
@@ -523,7 +525,7 @@ function Admin() {
       saveAs(blob, fileName);
       showAlert("success", "CSV template downloaded!");
     } catch (error) {
-      console.error("Error downloading CSV template:", error);
+      // console.error("Error downloading CSV template:", error);
       showAlert("error", "Failed to download CSV template");
     }
   }, [showAlert]);
@@ -600,7 +602,7 @@ function Admin() {
           showAlert("error", `Import failed: ${response.data.message}`);
         }
       } catch (error) {
-        console.error("CSV import error:", error);
+        // console.error("CSV import error:", error);
         setImportProgress({ show: false, status: "", processed: 0, total: 0 });
         showAlert(
           "error",
@@ -856,7 +858,7 @@ function Admin() {
 
             showAlert("success", `Exported ${exportContacts.length} contacts`);
           } catch (error) {
-            console.error("Export error:", error);
+            // console.error("Export error:", error);
             showAlert("error", "Failed to export contacts");
           } finally {
             setIsRefreshing(false);

@@ -24,14 +24,16 @@ const RecentEventsTimeline = () => {
   useEffect(() => {
     const fetchModificationHistory = async () => {
       try {
-        const response = await api.get("/contact/get-all-modification-history/");
+        const response = await api.get(
+          "/contact/get-all-modification-history/"
+        );
         const data = response.data;
 
         if (data.success && data.data) {
           setModificationHistory(data.data);
         }
       } catch (error) {
-        console.error("Failed to fetch modification history:", error);
+        // console.error("Failed to fetch modification history:", error);
       } finally {
         setIsLoadingHistory(false);
       }

@@ -130,7 +130,7 @@ function Navbar() {
       await logout(); // This will call the backend logout and clear cookies
       navigate("/login");
     } catch (error) {
-      console.error("Logout failed:", error);
+      // console.error("Logout failed:", error);
       // Navigate to login anyway
       navigate("/login");
     }
