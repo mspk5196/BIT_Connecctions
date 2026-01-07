@@ -22,7 +22,8 @@ RUN mkdir -p uploads
 
 # Environment
 ENV PYTHONUNBUFFERED=1 \
-	PORT=6000
+	PORT=6000 \
+	DISABLE_MODEL_SOURCE_CHECK=True
 
 # Expose Flask port
 EXPOSE 6000

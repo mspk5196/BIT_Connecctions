@@ -29,7 +29,9 @@ if not os.path.exists(UPLOAD_FOLDER):
 # --- Initialize Models ---
 print("Initializing PaddleOCR engine...")
 try:
-    ocr_engine = PaddleOCR(lang='en')
+    # Disable model source check to avoid connectivity delays
+    os.environ['DISABLE_MODEL_SOURCE_CHECK'] = 'True'
+    ocr_engine = PaddleOCR(lang='en', use_angle_cls=True, show_log=False)
     print("PaddleOCR engine ready.")
 except Exception as e:
     print(f"FATAL ERROR: Could not initialize PaddleOCR. Error: {e}")
