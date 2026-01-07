@@ -6,7 +6,8 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 from paddleocr import PaddleOCR
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -38,11 +39,13 @@ try:
     api_key = os.getenv('API_KEY')
     if not api_key:
         print("Warning: API_KEY not found in environment variables")
+        gemini_client = None
     else:
-        genai.configure(api_key=api_key)
+        gemini_client = genai.Client(api_key=api_key)
         print("Gemini AI configured.")
 except Exception as e:
     print(f"ERROR: API Key Configuration Error: {e}")
+    gemini_client = None
 
 # --- Core Processing Functions ---
 def extract_text_with_ocr(image_path, engine):
@@ -75,7 +78,9 @@ def extract_text_with_ocr(image_path, engine):
 def extract_business_card_details(ocr_text):
     """Extract structured business card details using Gemini AI"""
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        if gemini_client is None:
+            print("Gemini client not initialized, using fallback")
+            return create_fallback_data(ocr_text)
         
         prompt = f"""
         You are an expert AI data extractor specializing in parsing business card details.
@@ -104,7 +109,10 @@ def extract_business_card_details(ocr_text):
         4. Do not include markdown or explanations
         """
         
-        response = model.generate_content(prompt)
+        response = gemini_client.models.generate_content(
+            model='gemini-1.5-flash',
+            contents=prompt
+        )
         response_text = response.text.strip()
         
         # Clean up the response
@@ -172,7 +180,12 @@ def allowed_file(filename):
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({"status": "healthy", "service": "OCR API"})
+    return jsonify({
+        "status": "healthy", 
+        "service": "OCR API",
+        "port": os.getenv("PORT", 6000),
+        "ocr_ready": ocr_engine is not None
+    })
 
 @app.route('/extract-card', methods=['POST'])
 def extract_card():
@@ -230,6 +243,7 @@ def extract_card():
 
 # --- Run the Flask Server ---
 if __name__ == '__main__':
-    print("Starting OCR Flask Server...")
+    port = int(os.getenv("PORT", 6000))
+    print(f"Starting OCR Flask Server on port {port}...")
     print("Make sure to set your API_KEY environment variable for Gemini AI")
-    app.run(host='0.0.0.0', port=int(os.getenv("PORT")), debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False)
