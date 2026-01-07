@@ -75,7 +75,7 @@ app.use(cookieParser());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/auth", authRoute);
 app.use("/contact", ContactRoute);
-app.use("/", googleAuthRoute);
+app.use("/auth", googleAuthRoute);
 app.listen(process.env.PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
