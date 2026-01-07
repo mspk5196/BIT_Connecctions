@@ -28,5 +28,5 @@ ENV PYTHONUNBUFFERED=1 \
 # Expose Flask port
 EXPOSE 6000
 
-# Run the Flask server
-CMD ["python", "flask_server.py"]
+# Run the Flask server with Gunicorn for production
+CMD ["gunicorn", "--bind", "0.0.0.0:6000", "--timeout", "120", "--workers", "2", "flask_server:app"]
