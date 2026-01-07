@@ -63,7 +63,7 @@ app.use(
 
 // Security headers for Google OAuth
 app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+   res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
   res.setHeader("Referrer-Policy", "no-referrer-when-downgrade");
   next();
