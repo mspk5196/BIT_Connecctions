@@ -1087,7 +1087,7 @@ function DetailsInput() {
   const handleAssignToUser = async () => {
     if (source === "middleman" && initialData && currentUserId) {
       try {
-        const response = await api.post(`/assign/`, {
+        const response = await api.post(`contact/assign/`, {
           assigned_by: currentUserId,
           assigned_to: initialData.events[0]?.created_by,
           event_id: initialData.events[0]?.event_id,
