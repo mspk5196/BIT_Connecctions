@@ -48,7 +48,7 @@ function ProfileView() {
         }
 
         const response = await api.get(
-          `/get-modification-history/${contactId}`
+          `/contact/get-modification-history/${contactId}`
         );
         const data = response.data;
 
